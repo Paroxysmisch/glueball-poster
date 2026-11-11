@@ -2,285 +2,210 @@
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
 #import "@preview/showybox:2.0.4": showybox
 
-// ---------- palette (matches the paper's diagrams) ----------
-#let c-trans = rgb(106, 61, 154)
-#let c-trans-f = rgb(233, 223, 245)
-#let c-opt = rgb(55, 71, 133)
-#let c-opt-f = rgb(224, 229, 247)
-#let c-corr = rgb(13, 110, 100)
-#let c-corr-f = rgb(206, 235, 231)
-#let c-gold = rgb(150, 110, 6)
-#let c-gold-f = rgb(250, 232, 186)
-#let c-retry = rgb(176, 34, 34)
-#let c-gray = rgb(95, 95, 95)
+// ───────────── palette: soft pastels + deep ink ─────────────
+#let ink = rgb("#2b2d42")
+#let muted = rgb("#6b6f85")
+#let paper = rgb("#faf7f2")
+#let lav = (f: rgb("#e7e1f6"), s: rgb("#8f7fc9"), d: rgb("#5a4a9a"))   // translation
+#let sky = (f: rgb("#dce9f8"), s: rgb("#7ea6d9"), d: rgb("#3b5f9a"))   // optimizer
+#let mint = (f: rgb("#d8f0e5"), s: rgb("#74c3a1"), d: rgb("#2a7a62"))  // correctness
+#let sun = (f: rgb("#fbefc9"), s: rgb("#e5c15d"), d: rgb("#8a6a0c"))   // gluon / results
+#let rose = (f: rgb("#fadcd7"), s: rgb("#e59a8f"), d: rgb("#a8483c"))  // retry / failure
+#let grey = (f: rgb("#efedf0"), s: rgb("#b9b6c0"), d: rgb("#5b586a"))
 
-#set page(width: 841mm, height: 1189mm, margin: (x: 24mm, top: 18mm, bottom: 26mm),
-  footer: text(size: 20pt, fill: luma(90))[Poster built with Typst, fletcher and showybox. Content from "Glueball: Agentic Generation and Verification of Hardware-Optimized Gluon Kernels" (ICLR 2027 submission, under double-blind review).])
-#set text(font: "Libertinus Serif", size: 24pt, lang: "en")
-#set par(justify: true, leading: 0.62em, spacing: 0.95em)
-#let sans = "Noto Sans"
+#let display = "Montserrat"
+#let body-font = "Libre Franklin"
+#let mono = "Source Code Pro"
 
-// ---------- helpers ----------
-#let section(title, body, color: c-opt) = showybox(
+// ───────────── page & text ─────────────
+#set page(width: 841mm, height: 1189mm, fill: paper,
+  margin: (x: 26mm, top: 22mm, bottom: 28mm),
+  footer: align(center, text(size: 22pt, fill: muted, font: body-font)[
+    Glueball: Agentic Generation and Verification of Hardware-Optimized Gluon Kernels  ·  ICLR 2027 submission (double-blind)  ·  typeset with Typst]))
+#set text(font: body-font, size: 39pt, fill: ink, lang: "en", hyphenate: false, weight: 400)
+#set par(justify: false, leading: 0.72em, spacing: 1.1em)
+#set list(indent: 0pt, body-indent: 0.55em, spacing: 0.85em, marker: text(fill: sky.s, "●"))
+#set enum(indent: 0pt, body-indent: 0.55em, spacing: 0.85em)
+#show strong: set text(weight: 700)
+#show math.equation: set text(font: "New Computer Modern Math")
+#show raw: set text(font: mono)
+
+// ───────────── building blocks ─────────────
+#let card(num, title, pal, body) = showybox(
   frame: (
-    title-color: color,
-    border-color: color,
-    body-color: white,
-    thickness: 3pt,
-    radius: 10pt,
-    inset: (x: 22pt, y: 6pt),
-    body-inset: 22pt,
+    title-color: pal.f, border-color: pal.s, body-color: white,
+    thickness: 0pt, radius: 28pt,
+    inset: (x: 40pt, y: 18pt), body-inset: (x: 44pt, y: 36pt),
   ),
-  title-style: (weight: "bold", font: sans, size: 36pt, color: white),
-  title: title,
-  width: 100%,
-  breakable: true,
-  body,
+  shadow: (color: rgb("#2b2d42").transparentize(88%), offset: (x: 0pt, y: 8pt)),
+  title-style: (weight: 800, color: pal.d, boxed-style: none),
+  title: [
+    #box(fill: pal.s, radius: 100%, inset: (x: 18pt, y: 8pt),
+      text(font: display, size: 34pt, weight: 800, fill: white, num))
+    #h(14pt)
+    #text(font: display, size: 44pt, weight: 800, fill: pal.d, title)
+  ],
+  breakable: false, width: 100%, body)
+
+#let cap(body) = block(width: 100%, inset: (top: 14pt),
+  text(size: 28pt, fill: muted, style: "normal", body))
+#let fig(body, caption) = block(width: 100%, breakable: false)[#align(center, body) #cap(caption)]
+#let kw(body) = text(weight: 700, fill: sky.d, body)
+
+#let nbox(pal, body, w: auto, dashed: false, bold: false) = (
+  stroke: (paint: pal.s, thickness: 3pt, dash: if dashed { "dashed" }),
+  fill: pal.f, corner-radius: 18pt, inset: 18pt, width: w,
 )
 
-#let cap(body) = text(size: 22pt, fill: luma(60), body)
-#let fig(body, caption) = block(width: 100%, breakable: false)[
-  #align(center, body)
-  #v(6pt)
-  #cap(caption)
-]
-#let hl(body) = text(weight: "bold", fill: c-corr, body)
-
-// ---------- diagram node styles ----------
-#let bx(color, fill, body, w: auto, dash: none, thick: 2.4pt) = node(
-  stroke: (paint: color, thickness: thick, dash: dash), fill: fill, corner-radius: 8pt,
-  inset: 14pt, width: w, body)
-
-// ======================= HEADER =======================
-#block(width: 100%, fill: gradient.linear(c-opt, c-corr, angle: 0deg), radius: 14pt, inset: 28pt)[
-  #set text(fill: white, font: sans)
-  #grid(columns: (1fr, auto), align: horizon,
+// ═════════════ HEADER ═════════════
+#block(width: 100%, radius: 36pt, inset: (x: 70pt, y: 42pt),
+  fill: gradient.linear(rgb("#dcd5f4"), rgb("#d3e4f7"), rgb("#d3efe3"), angle: 8deg))[
+  #grid(columns: (1fr, auto), column-gutter: 60pt, align: (left + horizon, right + horizon),
     [
-      #text(size: 90pt, weight: "black")[Glueball]
-      #v(-6pt)
-      #text(size: 42pt, weight: "medium")[Agentic Generation and Verification of Hardware-Optimized Gluon Kernels]
-      #v(10pt)
-      #text(size: 34pt)[Anonymous authors #h(1em) · #h(1em) Paper under double-blind review #h(1em) · #h(1em) ICLR 2027 submission]
+      #text(font: display, size: 150pt, weight: 800, tracking: -3pt, fill: ink)[Glueball]
+      #v(-20pt)
+      #text(font: display, size: 54pt, weight: 600, fill: ink.lighten(10%))[
+        Agentic Generation and Verification of \ Hardware-Optimized Gluon Kernels]
+      #v(16pt)
+      #text(size: 34pt, fill: muted)[Anonymous authors #h(0.8em) • #h(0.8em) ICLR 2027 submission, under double-blind review]
     ],
-    block(fill: white.transparentize(85%), radius: 12pt, inset: 26pt, stroke: 2pt + white)[
-      #text(size: 30pt, weight: "bold")[Keywords]\
-      #text(size: 28pt)[LLM agents · GPU kernels · Gluon / Triton\ Z3 theorem proving · Blackwell TMA]
-    ])
-]
-#v(12pt)
-
-// ======================= ABSTRACT =======================
-#block(width: 100%, fill: c-gold-f, stroke: 3pt + c-gold, radius: 12pt, inset: 30pt)[
-  #text(font: sans, weight: "bold", size: 40pt, fill: c-gold)[Abstract] \
-  LLM agents are well suited to exploring the GPU optimization space through iterative code generation, but numerical testing alone covers little of the input and execution space: agents can overfit to tested inputs and miss correctness violations that stem from subtle hardware-execution semantics. *Glueball is the first system to equip LLM agents with theorem-proving tools to reason about correctness during GPU kernel generation.* It targets *Gluon*, Triton's tile-level DSL with direct access to GPU hardware, and optimizes single- and multi-kernel workloads using end-to-end model performance and theorem-prover guidance as feedback. Results show improved kernel bug detection and end-to-end performance competitive with already-performant Triton baselines.
-]
-#v(12pt)
-
-// ======================= FIGURE 1 (full width) =======================
-#section("System Architecture: Optimize → Verify → Benchmark", color: c-opt)[
-  #fig(
-    { set par(justify: false); diagram(
-      node-inset: 12pt, spacing: (72pt, 22pt), edge-stroke: 2.4pt, mark-scale: 90%,
-      label-size: 28pt, node-defocus: 0,
-      // column 0..7
-      node((0, 1), [*Triton Model*\ #text(size: 24pt)[$K$ kernels]], name: <src>,
-        stroke: 2.4pt + luma(110), fill: luma(244), corner-radius: 8pt, width: 215pt),
-      node((1, 0), [Kernel 1\ AST translation], name: <a1>, stroke: 2.4pt + c-trans, fill: c-trans-f, corner-radius: 8pt, width: 215pt),
-      node((1, 1), [Kernel 2\ AST translation], name: <a2>, stroke: 2.4pt + c-trans, fill: c-trans-f, corner-radius: 8pt, width: 215pt),
-      node((1, 2), [Kernel $K$\ AST translation], name: <a3>, stroke: 2.4pt + c-trans, fill: c-trans-f, corner-radius: 8pt, width: 215pt),
-      node((2, 1), [*Gluon Model*\ $M^((r))$\ #text(size: 24pt)[$K$ kernels]], name: <state>,
-        stroke: 3pt + c-gold, fill: c-gold-f, corner-radius: 8pt, width: 215pt),
-      node((3, 0), [Kernel 1\ Profiling Agent], name: <p1>, stroke: 2.4pt + c-opt, fill: c-opt-f, corner-radius: 8pt, width: 215pt),
-      node((3, 1), [Kernel 2\ Profiling Agent], name: <p2>, stroke: 2.4pt + c-opt, fill: c-opt-f, corner-radius: 8pt, width: 215pt),
-      node((3, 2), [Kernel $K$\ Profiling Agent], name: <p3>, stroke: 2.4pt + c-opt, fill: c-opt-f, corner-radius: 8pt, width: 215pt),
-      node((4, 1), [*Proposal*\ Agent], name: <prop>, stroke: 2.4pt + c-opt, fill: c-opt-f, corner-radius: 8pt, width: 215pt),
-      node((5, 1), [*Implementation*\ Agent], name: <impl>, stroke: 2.4pt + c-opt, fill: c-opt-f, corner-radius: 8pt, width: 215pt),
-      node((6, 0), [Kernel 1\ Verification], name: <v1>, stroke: 2.4pt + c-corr, fill: c-corr-f, corner-radius: 8pt, width: 215pt),
-      node((6, 1), [Kernel 2\ Unchanged], name: <v2>, stroke: 2.4pt + luma(110), fill: luma(244), corner-radius: 8pt, width: 215pt),
-      node((6, 2), [Kernel $K$\ Verification], name: <v3>, stroke: 2.4pt + c-corr, fill: c-corr-f, corner-radius: 8pt, width: 215pt),
-      node((7, 1), [*Updated Gluon Model*\ $M^((r+1))$\ #text(size: 24pt)[$K$ kernels]], name: <next>,
-        stroke: 3pt + c-gold, fill: c-gold-f, corner-radius: 8pt, width: 215pt),
-      node((7, 0), [*Full-Model\ Benchmarking*], name: <bench>, stroke: 2.4pt + luma(110), fill: white, corner-radius: 8pt, width: 215pt),
-      node((1, 0.5), $dots.v$), node((3, 0.5), $dots.v$), node((6, 0.5), $dots.v$),
-      node((1, 1.5), $dots.v$), node((3, 1.5), $dots.v$), node((6, 1.5), $dots.v$),
-      node(enclose: (<p1>, <p3>, <v1>, <v3>, <impl>), name: <round>,
-        stroke: (paint: c-gray, dash: "dashed", thickness: 2.4pt), fill: none, corner-radius: 16pt, inset: 42pt),
-      node((3.15, -0.78), text(fill: c-gray, weight: "bold")[Optimization round $r$], stroke: none, fill: white),
-      node((4.5, 3.1), [*Held-out Testbench*], name: <test>, stroke: (paint: luma(110), dash: "dashed", thickness: 2.4pt), corner-radius: 8pt, width: 215pt),
-      // flow
-      edge(<src>, (0.5, 1), (0.5, 0), <a1>, "->"), edge(<src>, "->", <a2>), edge(<src>, (0.5, 1), (0.5, 2), <a3>, "->"),
-      edge(<a1>, (1.5, 0), (1.5, 1), <state>, "->"), edge(<a2>, "->", <state>), edge(<a3>, (1.5, 2), (1.5, 1), <state>, "->"),
-      edge(<state>, (2.5, 1), (2.5, 0), <p1>, "->"), edge(<state>, "->", <p2>), edge(<state>, (2.5, 1), (2.5, 2), <p3>, "->"),
-      edge(<p1>, (3.5, 0), (3.5, 1), <prop>, "->"), edge(<p2>, "->", <prop>), edge(<p3>, (3.5, 2), (3.5, 1), <prop>, "->"),
-      edge(<prop>, "->", <impl>),
-      edge(<impl>, (5.5, 1), (5.5, 0), <v1>, "->"), edge(<impl>, "->", <v2>, stroke: (dash: "dotted")), edge(<impl>, (5.5, 1), (5.5, 2), <v3>, "->"),
-      edge(<v1>, (6.5, 0), (6.5, 1), <next>, "->"), edge(<v2>, "->", <next>), edge(<v3>, (6.5, 2), (6.5, 1), <next>, "->"),
-      edge(<next>, <bench>, "->"),
-      edge(<bench>, (7, -1.7), (2, -1.7), <state>, "->"),
-      node((4.5, -1.7), [Repeat until max rounds], fill: white, stroke: none),
-      edge(<v3>, (6, 2.55), (5, 2.55), <impl>, "-->", stroke: (paint: c-retry, dash: "dashed")),
-      node((5.5, 2.55), text(fill: c-retry, size: 22pt)[reject: retry with feedback], fill: white, stroke: none),
-      edge(<src>, (0, 3.1), <test>, "-->", stroke: (paint: luma(110), thickness: 1.6pt)),
-      edge(<next>, (7, 3.1), <test>, "-->", stroke: (paint: luma(110), thickness: 1.6pt)),
-    ) },
-    [*Figure 1.* The loop translates each Triton kernel to Gluon by AST rewriting, then each round _profiles_, _proposes_, _implements_ and _benchmarks_. Every candidate is formally and empirically validated by the correctness pipeline before benchmarking and committing; rejected changes retry with feedback.],
+    stack(dir: ttb, spacing: 16pt,
+      ..("LLM agents", "GPU kernels", "Gluon · Triton", "Z3 theorem proving", "Blackwell TMA").map(t =>
+        box(fill: white.transparentize(30%), stroke: 2pt + white, radius: 100%, inset: (x: 28pt, y: 12pt),
+          text(size: 30pt, weight: 600, fill: ink.lighten(15%), t)))),
   )
 ]
-#v(12pt)
+#v(40pt)
 
-#section("Correctness Pipeline", color: c-corr)[
-  #fig(
-    { set par(justify: false); diagram(
-      node-inset: 10pt, spacing: (120pt, 22pt), edge-stroke: 2.2pt, mark-scale: 90%, label-size: 24pt,
-      node((0, 0), [*Reference Triton*], name: <rt>, stroke: 2.2pt + luma(110), fill: luma(244), corner-radius: 8pt, width: 270pt),
-      node((0, 1), [*PyTorch Reference*], name: <pt>, stroke: 2.2pt + luma(110), fill: luma(244), corner-radius: 8pt, width: 270pt),
-      node((0, 2), [*Previous Gluon*], name: <pg>, stroke: 2.2pt + c-gold, fill: c-gold-f, corner-radius: 8pt, width: 270pt),
-      node((1, 1), [*Splitter*\ #text(size: 22pt)[segments blocks]], name: <sp>, stroke: 2.2pt + c-corr, fill: c-corr-f, corner-radius: 8pt, width: 202pt),
-      node((2, 1), [*Mapper*\ #text(size: 22pt)[aligns tuples]], name: <mp>, stroke: 2.2pt + c-corr, fill: c-corr-f, corner-radius: 8pt, width: 202pt),
-      node((3, 1), [*Block-wise Equivalence*], name: <eq>, stroke: 2.2pt + c-corr, fill: c-corr-f, corner-radius: 8pt, width: 256pt),
-      node((4, 1), [*Verdict*], name: <vd>, stroke: 2.2pt + c-corr, fill: c-corr-f, corner-radius: 8pt, width: 175pt),
-      node((4, 2.5), [*Counterexample*\ #text(size: 22pt)[reproduce on GPU]], name: <ce>, stroke: (paint: c-retry, dash: "dotted", thickness: 2.4pt), fill: white, corner-radius: 8pt, width: 270pt),
-      node((5, 1), [*Correctness Report*], name: <rp>, stroke: 3pt + c-corr, fill: c-corr-f, corner-radius: 8pt, width: 256pt),
-      node(enclose: (<eq>, <vd>), stroke: (paint: c-corr, dash: "dashed", thickness: 2pt), corner-radius: 14pt, inset: 22pt,
-        snap: false, name: <z3>),
-      edge(<pt>, <sp>, "->"), edge(<rt>, (1.5, 0), (1.5, 1), <mp>, "->"), edge(<pg>, (1.5, 2), (1.5, 1), <mp>, "->"),
-      edge(<sp>, <mp>, "->"), edge(<mp>, <eq>, "->"), edge(<eq>, <vd>, "->"),
-      edge(<vd>, <rp>, "->", label: text(fill: c-corr)[correct], label-side: left),
-      edge(<vd>, <ce>, "->", label: text(fill: c-retry)[incorrect], label-side: left, label-sep: 8pt),
-      edge(<ce>, (5, 2.5), <rp>, "->"),
-      edge(<ce>, (3, 2.5), (3, 2.2), (2, 2.2), <mp>, "-->", stroke: c-retry + 2pt, label: text(fill: c-retry)[retry], label-pos: 0.2, label-side: left),
-    ) },
-    [*Figure 2.* Reference and candidate programs are segmented and aligned; each region is checked with LLM reasoning and Z3 tools. Failures become concrete witnesses used for retry or the final verdict.],
+// ═════════════ FIGURES ═════════════
+#let sub(t) = text(size: 25pt, fill: muted, t)
+#let nd(pal, pos, name, body, w: 230pt, dash: none) = node(pos, name: name, width: w, fill: pal.f,
+  stroke: (paint: pal.s, thickness: 3pt, dash: dash), corner-radius: 18pt, inset: 16pt, body)
+
+#let fig-arch = {
+  set par(justify: false); set text(size: 34pt)
+  diagram(
+    node-inset: 14pt, spacing: (62pt, 74pt), edge-stroke: 3.5pt + ink.lighten(30%), mark-scale: 85%,
+    nd(grey, (0, 0), <tri>, [*Triton model* \ #sub[$K$ kernels]], w: 270pt),
+    nd(lav, (1, 0), <tr>, [*AST translation* \ #sub[Triton → Gluon]], w: 270pt),
+    nd(sun, (2, 0), <m>, [*Gluon model* \ $M^((r))$], w: 270pt),
+    nd(sky, (2, 1), <pf>, [*Profile* \ #sub[per-kernel agents]], w: 270pt),
+    nd(sky, (1, 1), <pr>, [*Propose* \ #sub[ranked portfolio]], w: 270pt),
+    nd(sky, (0, 1), <im>, [*Implement* \ #sub[targeted edits]], w: 270pt),
+    nd(mint, (0, 2), <vf>, [*Verify* \ #sub[tests + Z3 tools]], w: 270pt),
+    nd(grey, (1, 2), <bm>, [*Benchmark* \ #sub[hidden shapes]], w: 270pt),
+    nd(sun, (2, 2), <m2>, [*Commit* $M^((r+1))$ \ #sub[next round]], w: 270pt, dash: "dashed"),
+    edge(<tri>, <tr>, "->"), edge(<tr>, <m>, "->"), edge(<m>, <pf>, "->"),
+    edge(<pf>, <pr>, "->"), edge(<pr>, <im>, "->"),
+    edge(<im>, <vf>, "->", shift: 22pt), edge(<vf>, <im>, "-->", shift: 22pt, stroke: 3.5pt + rose.s),
+    node((0.55, 1.5), text(fill: rose.d, size: 27pt, weight: 700)[reject → retry], stroke: none),
+    edge(<vf>, <bm>, "->"), edge(<bm>, <m2>, "->", stroke: 3.5pt + sun.s),
   )
-]
-#v(12pt)
+}
 
-// ======================= TWO COLUMNS =======================
-#columns(2, gutter: 28pt)[
-
-#section("Motivation & Contributions", color: c-retry)[
-  - Finite test suites miss *concurrency bugs* (races, barrier misuse). Hopper/Blackwell make this worse: warp specialization, TMA and multi-stage pipelines create a huge asynchronous state space.
-  - LLMs adapt expert patterns per kernel, but reasoning about run-time GPU semantics is still a weak spot.
-  + *Interactive profiling interface:* profilers, debuggers, compilers.
-  + *Theorem provers as tools:* Z3 feedback via our *Gluon-to-Z3 library* (race, bank-conflict, barrier-order checks).
-  + *Whole-model performance testing* on representative shapes.
-  - *Why Gluon?* It sits _below_ Triton, exposing explicit layouts and warp specialization with tile-level semantics suited to formal reasoning.
-]
-
-#v(10pt)
-
-#section("Optimization Pipeline (per round)", color: c-opt)[
-  + *Profile:* Nsight Compute + source probes rank kernels by end-to-end impact.
-  + *Propose:* one agent ranks multi-kernel transformations using IR, PTX and micro-benchmarks.
-  + *Implement & verify:* compile, numerics (FpSan), blockwise formal checks; failures return *Z3 counterexamples*.
-  + *Benchmark:* hidden, re-randomized inputs each round; only fully passing proposals are committed.
-]
-
-#v(10pt)
-
-#section("Formal-Tools-Guided Verification", color: c-corr)[
-  Equivalence is undecidable and GPU state spaces explode, so Glueball is *hybrid*: symbolic execution + LLM reasoning + targeted Z3 models.
-  - *Symbolic execution:* IR ops → Z3 expressions over symbolic inputs; softmax is recovered as $"exp"(x - max) / "sum"$.
-  - *Opaque ops* (reductions, memory, sync, loops) split kernels into *symbolic regions*: Z3 inside, LLM across boundaries.
-  - *Gluon-to-Z3:* async-copy, barrier and shared-memory models.
-]
-
-#v(10pt)
-
-#section("Correctness Results", color: c-corr)[
-  #let hd(..a, b) = table.cell(fill: c-corr, ..a.named(), text(fill: white, weight: "bold", size: 21pt, b))
-  #let dl(b) = text(fill: c-corr, weight: "bold", b)
-  #fig(
-    table(
-      columns: (1.9fr, 0.8fr, 0.8fr, 0.9fr, 0.8fr, 0.8fr, 0.8fr, 0.9fr, 0.8fr),
-      align: (left, center), stroke: 1pt + luma(190), inset: 10pt, fill: (_, y) => if y > 1 and calc.odd(y) { luma(245) },
-      hd(rowspan: 3)[Model],
-      hd(colspan: 4)[Generic Suite], hd(colspan: 4)[Synchronization Suite],
-      hd(colspan: 2)[Detected ↑ (of 24)], hd(colspan: 2)[False pos. ↓ (of 26)],
-      hd(colspan: 2)[Detected ↑ (of 10)], hd(colspan: 2)[False pos. ↓ (of 12)],
-      ..for _ in range(4) { (hd[Base], hd[Δ]) },
-      [DeepSeek V4 Pro], [21], dl[+3], [0], [0], [10], [0], [7], dl[−5],
-      [DeepSeek V4 Flash], [22], dl[+2], [0], [0], [10], [0], [1], dl[−1],
-      [Meta Muse Spark 1.3], [22], dl[+2], [0], [0], [9], [0], [3], dl[−3],
-      [GPT 5.6 Sol], [21], dl[+2], [0], [0], [9], dl[+1], [1], dl[−1],
-    ),
-    [*Figure 4.* Glueball improves bug detection for all four models with no more false positives. Δ is the change when the Glueball pipeline is added to a baseline LLM.],
+#let fig-corr = {
+  set par(justify: false); set text(size: 30pt)
+  diagram(
+    node-inset: 14pt, spacing: (46pt, 54pt), edge-stroke: 3pt + ink.lighten(30%), mark-scale: 85%,
+    nd(grey, (0, 0), <rt>, [Reference \ Triton], w: 215pt),
+    nd(grey, (0, 1), <pt>, [PyTorch \ reference], w: 215pt),
+    nd(sun, (0, 2), <pg>, [Previous \ Gluon], w: 215pt),
+    nd(mint, (1, 1), <sa>, [*Split & \ align*], w: 210pt),
+    nd(mint, (2, 1), <eq>, [*Block-wise \ equivalence*], w: 240pt),
+    nd(mint, (3, 1), <vd>, [*Verdict*], w: 200pt),
+    nd(mint, (3, 0), <rp>, [*Correctness \ report*], w: 215pt),
+    nd(rose, (3, 2), <ce>, [*Counter-\example*], w: 215pt, dash: "dashed"),
+    edge(<rt>, "r", <sa>, "->", corner: right), edge(<pt>, <sa>, "->"), edge(<pg>, "r", <sa>, "->", corner: left),
+    edge(<sa>, <eq>, "->"), edge(<eq>, <vd>, "->"),
+    edge(<vd>, <rp>, "->", stroke: 3pt + mint.s),
+    node((3.52, 0.5), text(fill: mint.d, size: 25pt, weight: 600)[correct], stroke: none),
+    edge(<vd>, <ce>, "->", stroke: 3pt + rose.s),
+    node((3.55, 1.5), text(fill: rose.d, size: 25pt, weight: 600)[incorrect], stroke: none),
+    edge(<ce>, (1, 2), <sa>, "-->", stroke: 3pt + rose.s),
+    node((2, 2), text(fill: rose.d, size: 25pt, weight: 600)[no repro → retry], stroke: none, fill: white, inset: 6pt),
+    node(enclose: (<eq>, <vd>), stroke: (paint: mint.s, dash: "dotted", thickness: 3pt), corner-radius: 22pt, inset: 26pt),
   )
-  #v(8pt)
-  - *Generic:* 50 cases (24 bugs, 26 controls) from 7 Liger operators; *zero false positives*.
-  - *Synchronization:* 22 Gluon kernels (10 bugs, 12 controls); Z3 tools *cut false positives* sharply (7 → 2 for V4 Pro).
+}
+
+// ═════════════ BODY: TWO COLUMNS ═════════════
+#let colL = [
+  #card("01", "Abstract", sun)[
+    On Hopper and Blackwell, *asynchronous* warp specialization, TMA and pipelines hide races from *finite test suites*.
+
+    *Glueball* is the first system to give LLM agents *theorem-proving tools* (Z3) while they generate and optimize *Gluon* kernels, guided by end-to-end model speed and prover feedback.
+  ]
+  #v(1fr)
+  #card("02", "System: optimize, verify, benchmark", sky)[
+    #fig(fig-arch)[*Figure 1.* Each Triton kernel is translated to Gluon, then every round profiles, proposes, implements and benchmarks. Only changes that pass the correctness pipeline are committed.]
+    #v(10pt)
+    Whole-model benchmarking on _hidden, re-randomized_ shapes keeps agents from overfitting to tests.
+  ]
+  #v(1fr)
+  #card("03", "Formal tools in the loop", mint)[
+    #fig(fig-corr)[*Figure 2.* Reference and candidate are split into aligned regions, each checked by LLM reasoning plus Z3. Failures become runnable witnesses.]
+    #v(10pt)
+    - *Symbolic execution:* IR ops become Z3 terms; opaque ops split kernels into regions.
+    - *Gluon-to-Z3 library:* models async copies, barriers and shared memory to prove race freedom.
+  ]
 ]
 
-#v(10pt)
+#let code(body) = block(fill: rgb("#f6f4f9"), stroke: 2pt + grey.s, radius: 16pt, inset: 22pt, width: 100%,
+  text(font: mono, size: 27pt, body))
+#let hd(..a, b) = table.cell(fill: mint.f, ..a.named(), text(fill: mint.d, weight: 700, size: 28pt, b))
+#let pos(b) = text(fill: mint.d, weight: 700, b)
 
-#section("Conclusions & Future Work", color: c-gold)[
-  - First system to integrate formal verification into agentic GPU kernel optimization: more bugs found, fewer false positives, gains from data movement, hardware execution and algorithmic structure.
-  - *Next:* multi-GPU and heterogeneous targets; constraint- and statistics-guided pipeline-schedule search.
-]
-
-#colbreak()
-
-#section("Optimization Results", color: c-gold)[
-  _Setup:_ DGX Spark (GB10), 6 rounds; agents DeepSeek V4 Pro/Flash, Meta Muse Spark 1.3, GPT 5.6 Sol; GPT-OSS, Qwen-3.5 MoE, Mamba-2 and 3 Liger kernels.
-  #v(6pt)
-  #fig(
-    image("figures/violin.pdf", width: 76%),
-    [*Figure 3.* Best-round speedup across input shapes (end-to-end). Violins show the per-shape density; the circle is the median (green ≥ parity, red below). Some panels are log-scale.],
-  )
-  #v(8pt)
-  - *GPT-OSS:* DeepSeek V4 Pro folds the QKV transpose into the TMA descriptor and indexes GQA heads in-kernel, cutting memory traffic.
-  - *Qwen-3.5 MoE:* *TMA gather* moves routed token rows; contiguous TMA moves weight tiles.
-  - *Mamba-2:* Triton's pipeline is already strong; extra buffering cost more than it overlapped.
-  - *Neighborhood attention:* algorithmic win, $O(L^2 D) arrow O(L W D)$, about *25× median*.
-]
-
-#v(10pt)
-
-#section("Case Study: Z3 Exposes a Pipelining Bug", color: c-retry)[
-  #let code(body, ..a) = block(fill: luma(247), stroke: 1.5pt + luma(180), radius: 6pt, inset: 16pt, width: 100%,
-    text(font: "Source Code Pro", size: 18pt, body))
-  #grid(columns: (1fr, 1fr), gutter: 18pt,
-    [#text(weight: "bold", size: 24pt)[(a) Pipelining bug]
-     #code(```python
-# Correct
-cp.wait_group(num_buffers - 1)
-perform_add(a_smem[read_idx % n],
-            b_smem[read_idx % n])
-
-# Bug: copy still outstanding
-cp.wait_group(num_buffers)
-perform_add(a_smem[read_idx % n],
-            b_smem[read_idx % n])
-```)
-     ],
-    [#text(weight: "bold", size: 24pt, fill: c-retry)[(c) Z3 verdict]
-     #code(```
+#let colR = [
+  #card("04", "Whole-model speedups over Triton", sun)[
+    #fig(image("figures/violin.pdf", width: 100%))[*Figure 3.* Best-round speedup per input shape on GB10 (DeepSeek V4 Pro / Flash, Meta Muse Spark 1.3, GPT 5.6 Sol). Circle = median.]
+    #v(10pt)
+    - *GPT-OSS:* TMA descriptors absorb the QKV transpose and GQA indexing.
+    - *Qwen-3.5 MoE:* *TMA gather* moves routed token rows directly to shared memory.
+    - *Neighborhood attention:* an algorithmic win, $O(L^2 D) arrow O(L W D)$, about *25×*.
+  ]
+  #v(1fr)
+  #card("05", "Verification finds more bugs", mint)[
+    #fig(
+      table(columns: (2.6fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr), align: (left + horizon, center + horizon),
+        stroke: none, inset: 11pt, row-gutter: 0pt,
+        fill: (_, y) => if y > 1 and calc.even(y) { rgb("#f4faf7") },
+        table.cell(rowspan: 2, hd[Model]),
+        table.cell(colspan: 4, hd[Generic suite]), table.cell(colspan: 4, hd[Sync suite]),
+        hd[Bugs ↑], hd[Δ], hd[FP ↓], hd[Δ], hd[Bugs ↑], hd[Δ], hd[FP ↓], hd[Δ],
+        table.hline(stroke: 2pt + mint.s),
+        [V4 Pro], [21], pos[+3], [0], [0], [10], [0], [7], pos[−5],
+        [V4 Flash], [22], pos[+2], [0], [0], [10], [0], [1], pos[−1],
+        [Muse Spark], [22], pos[+2], [0], [0], [9], [0], [3], pos[−3],
+        [GPT 5.6 Sol], [21], pos[+2], [0], [0], [9], pos[+1], [1], pos[−1],
+        table.hline(stroke: 2pt + mint.s),
+      ))[*Figure 4.* Bugs detected (of 24 / 10) and false positives (of 26 / 12); Δ is the gain from the Glueball pipeline.]
+    #v(10pt)
+    Z3 evidence *cuts sync false positives sharply* (7 → 2 for V4 Pro) and recovers missed bugs.
+  ]
+  #v(1fr)
+  #card("06", "Case study: a pipelining bug", rose)[
+    #grid(columns: (1fr, 1fr), column-gutter: 26pt,
+      [#text(font: display, weight: 700, size: 28pt, fill: rose.d)[Buggy kernel]
+       #v(4pt)
+       #code[```python
+# correct
+wait_group(n - 1)
+# bug: copy in flight
+wait_group(n)
+add(a_smem[i % n],
+    b_smem[i % n])
+```]],
+      [#text(font: display, weight: 700, size: 28pt, fill: rose.d)[Z3 verdict]
+       #v(4pt)
+       #code[```
 wait_group(2): DATA RACE
-  copy0 STORE SHARED@0x100
-        proxy=ASYNC_COPY
-  <-race->
-  read buffer0
-        LOAD SHARED@0x100
-        proxy=GENERIC
-wait_group(1): RACE-FREE: proven
-```)],
-    [#text(weight: "bold", size: 24pt, fill: c-retry)[(d) Pipeline witness]
-     #code(```
-check_pipeline_stage_isolation(
-    num_stages=2, max_inflight=2)
-
-PIPELINE COLLISION:
- producer and consumer share a slot
- witness: [iter_p = 2, lag = 2]
-
-max_inflight=1:
-STAGE-ISOLATED: num_stages=2
-never aliases with up to 1
-in-flight iteration
-```)])
-  #v(8pt)
-  #cap[*Figure 5.* The buggy kernel waits for too few async copies. Z3 finds the conflicting async write and shared read, plus a concrete iteration witness where producer and consumer alias one slot.]
+ async STORE @0x100
+ <-race->
+ LOAD  @0x100
+wait_group(1): RACE-FREE
+witness: iter_p=2, lag=2
+```]])
+    #cap[*Figure 5.* The agent encodes the pipeline in Z3, which exposes the async write racing with the shared-memory read and a concrete iteration witness.]
+  ]
 ]
 
-]
-
+#block(height: 1fr, grid(columns: (1fr, 1fr), column-gutter: 44pt, colL, colR))
