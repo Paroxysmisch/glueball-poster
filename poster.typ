@@ -58,7 +58,7 @@
   text(font: sans, size: 25pt, fill: muted, body))
 #let fig(body) = block(width: 100%, breakable: false, align(center, body))
 #let sub(t) = text(font: serif, size: 26pt, fill: muted, style: "italic", t)
-#let nd(pal, pos, name, body, w: 230pt, dash: none) = node(pos, name: name, width: w, fill: pal.f,
+#let nd(pal, pos, name, body, w: 230pt, h: auto, dash: none) = node(pos, name: name, width: w, height: h, fill: pal.f,
   stroke: (paint: pal.s, thickness: 2.5pt, dash: dash), corner-radius: 7pt, inset: 20pt, outset: 7pt, body)
 #let tag(pal, t) = text(font: serif, size: 28pt, style: "italic", weight: 600, fill: pal.d, t)
 
@@ -77,46 +77,48 @@
 // ═════════════ FULL-WIDTH FIGURES ═════════════
 #let fig-arch = {
   set par(justify: false); set text(font: serif, size: 31pt)
+  let H = 96pt
   diagram(
     node-inset: 12pt, spacing: (62pt, 46pt), edge-stroke: 2.8pt + ink.lighten(30%), mark-scale: 85%,
-    nd(lav, (0, 0), <tr>, [*AST translation* \ #sub[Triton kernels → Gluon]], w: 300pt),
-    nd(sun, (1, 0), <m>, [*Gluon model* \ $M^((r))$], w: 250pt),
-    nd(sky, (2, 0), <pf>, [*Profile* \ #sub[agent per kernel]], w: 270pt),
-    nd(sky, (3, 0), <pr>, [*Propose* \ #sub[ranked portfolio]], w: 270pt),
-    nd(sky, (4, 0), <im>, [*Implement* \ #sub[targeted edits]], w: 270pt),
-    nd(mint, (5, 0), <vf>, [*Verify* \ #sub[tests + Z3 tools]], w: 270pt),
-    nd(grey, (6, 0), <bm>, [*Benchmark* \ #sub[full model]], w: 250pt),
+    nd(lav, (0, 0), <tr>, [*AST translation* \ #sub[Triton kernels → Gluon]], w: 300pt, h: H),
+    nd(sun, (1, 0), <m>, [*Gluon model* \ $M^((r))$], w: 250pt, h: H),
+    nd(sky, (2, 0), <pf>, [*Profile* \ #sub[agent per kernel]], w: 270pt, h: H),
+    nd(sky, (3, 0), <pr>, [*Propose* \ #sub[ranked portfolio]], w: 270pt, h: H),
+    nd(sky, (4, 0), <im>, [*Implement* \ #sub[targeted edits]], w: 270pt, h: H),
+    nd(mint, (5, 0), <vf>, [*Verify* \ #sub[tests + Z3 tools]], w: 270pt, h: H),
+    nd(grey, (6, 0), <bm>, [*Benchmark* \ #sub[full model]], w: 250pt, h: H),
     edge(<tr>, <m>, "->"), edge(<m>, <pf>, "->"),
     edge(<pf>, <pr>, "->"), edge(<pr>, <im>, "->"), edge(<im>, <vf>, "->"), edge(<vf>, <bm>, "->"),
-    edge((5, 0.41), (5, 0.85), (4, 0.85), (4, 0.41), "-->", snap-to: (none, none), stroke: 2.8pt + rose.s),
-    node((4.5, 1.12), tag(rose, [reject: retry with feedback]), stroke: none),
-    edge((6, -0.41), (6, -0.85), (1, -0.85), (1, -0.41), "->", snap-to: (none, none), stroke: 2.8pt + sun.s),
-    node((3.5, -0.85), tag(sun, [commit $M^((r+1))$ · repeat until max rounds]), fill: white, stroke: none, inset: 8pt),
-    node(enclose: (<pf>, <vf>), stroke: (paint: grey.s, dash: "dashed", thickness: 2.5pt), corner-radius: 10pt, inset: 26pt),
-    node((3.0, 0.52), text(font: serif, size: 25pt, weight: 600, fill: grey.d, tracking: 1.5pt)[#smallcaps[optimization round] $r$], stroke: none, fill: white, inset: 6pt),
+    // retry loop (below) and repeat loop (above); endpoints sit ~20pt clear of the boxes
+    edge((5, 0.46), (5, 0.84), (4, 0.84), (4, 0.46), "-->", snap-to: (none, none), stroke: 2.8pt + rose.s),
+    node((4.5, 1.1), tag(rose, [reject: retry with feedback]), stroke: none),
+    edge((6, -0.46), (6, -0.84), (1, -0.84), (1, -0.46), "->", snap-to: (none, none), stroke: 2.8pt + sun.s),
+    node((3.5, -0.84), tag(sun, [repeat until max. rounds]), fill: white, stroke: none, inset: 10pt),
   )
 }
 
 #let fig-corr = {
   set par(justify: false); set text(font: serif, size: 31pt)
+  let HI = 60pt
+  let HM = 88pt
   diagram(
-    node-inset: 12pt, spacing: (100pt, 22pt), edge-stroke: 2.8pt + ink.lighten(30%), mark-scale: 85%,
-    nd(grey, (0, 0), <rt>, [Reference Triton], w: 340pt),
-    nd(grey, (0, 1), <pt>, [PyTorch reference], w: 340pt),
-    nd(sun, (0, 2), <pg>, [Previous Gluon], w: 340pt),
-    nd(mint, (1, 1), <sa>, [*Split & align* \ #sub[regions → tuples]], w: 310pt),
-    nd(mint, (2, 1), <eq>, [*Block-wise equivalence* \ #sub[LLM reasoning + Z3]], w: 400pt),
-    nd(mint, (3, 1), <vd>, [*Verdict*], w: 230pt),
-    nd(mint, (4, 1), <rp>, [*Correctness report*], w: 340pt),
-    nd(rose, (3, 2), <ce>, [*Counterexample* \ #sub[witness on real GPU]], w: 330pt, dash: "dashed"),
+    node-inset: 12pt, spacing: (100pt, 16pt), edge-stroke: 2.8pt + ink.lighten(30%), mark-scale: 85%,
+    nd(grey, (0, 0), <rt>, [Reference Triton], w: 340pt, h: HI),
+    nd(grey, (0, 1), <pt>, [PyTorch reference], w: 340pt, h: HI),
+    nd(sun, (0, 2), <pg>, [Previous Gluon], w: 340pt, h: HI),
+    nd(mint, (1, 1), <sa>, [*Split & align* \ #sub[regions → tuples]], w: 310pt, h: HM),
+    nd(mint, (2, 1), <eq>, [*Block-wise equivalence* \ #sub[LLM reasoning + Z3]], w: 400pt, h: HM),
+    nd(mint, (3, 1), <vd>, [*Verdict*], w: 230pt, h: HM),
+    nd(mint, (4, 1), <rp>, [*Correctness report*], w: 340pt, h: HM),
+    nd(rose, (3, 3), <ce>, [*Counterexample* \ #sub[witness on real GPU]], w: 330pt, h: HM, dash: "dashed"),
     edge(<rt>, (0.5, 0), (0.5, 1), <sa>, "->"), edge(<pt>, <sa>, "->"), edge(<pg>, (0.5, 2), (0.5, 1), <sa>, "->"),
     edge(<sa>, <eq>, "->"), edge(<eq>, <vd>, "->"),
     edge(<vd>, <rp>, "->", stroke: 2.8pt + mint.s),
-    node((3.5, 0.76), tag(mint, [correct]), stroke: none),
+    node((3.5, 0.62), tag(mint, [correct]), stroke: none),
     edge(<vd>, <ce>, "->", stroke: 2.8pt + rose.s),
-    node((3.26, 1.5), tag(rose, [incorrect]), stroke: none, fill: white, inset: 4pt),
-    edge(<ce>, (1, 2), <sa>, "-->", stroke: 2.8pt + rose.s),
-    node((2, 2), tag(rose, [does not reproduce → retry]), stroke: none, fill: white, inset: 8pt),
+    node((3.34, 2), tag(rose, [incorrect]), stroke: none, fill: white, inset: 4pt),
+    edge(<ce>, (1, 3), <sa>, "-->", stroke: 2.8pt + rose.s),
+    node((2, 3), tag(rose, [does not reproduce → retry]), stroke: none, fill: white, inset: 8pt),
   )
 }
 
