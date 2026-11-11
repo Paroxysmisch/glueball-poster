@@ -13,20 +13,20 @@
 #let rose = (f: rgb("#f5e0dc"), s: rgb("#d9a096"), d: rgb("#a8483c"))  // retry / failure
 #let grey = (f: rgb("#f0eef1"), s: rgb("#b9b6c0"), d: rgb("#5b586a"))
 
-#let serif = "Source Serif 4"
-#let display = "Source Serif 4 Display"
+#let serif = "New Computer Modern"
+#let display = "New Computer Modern"
 #let sans = "Libre Franklin"
 #let mono = "Source Code Pro"
 
 // ───────────── page & text ─────────────
 #set page(width: 841mm, height: 1189mm, fill: paper,
   margin: (x: 24mm, top: 20mm, bottom: 20mm))
-#set text(font: serif, size: 30pt, fill: ink, lang: "en", hyphenate: false, weight: 400)
+#set text(font: serif, size: 29pt, fill: ink, lang: "en", hyphenate: false, weight: 400)
 #set par(justify: false, leading: 0.72em, spacing: 1.1em)
 #set list(indent: 0pt, body-indent: 0.55em, spacing: 0.85em, marker: box(baseline: 0.0em, polygon.regular(size: 0.42em, vertices: 4, fill: sky.s, stroke: none)))
 #set enum(indent: 0pt, body-indent: 0.55em, spacing: 0.85em)
 #show strong: set text(weight: 700)
-#show math.equation: set text(font: "Libertinus Math")
+#show math.equation: set text(font: "New Computer Modern Math")
 #show raw: set text(font: mono)
 
 // ───────────── building blocks ─────────────
@@ -34,7 +34,7 @@
   frame: (
     title-color: pal.f.lighten(45%), border-color: pal.s.lighten(35%), body-color: white,
     thickness: 1.6pt, radius: 10pt,
-    inset: (x: 44pt, y: 16pt), body-inset: (x: 48pt, y: 18pt),
+    inset: (x: 44pt, y: 16pt), body-inset: (x: 56pt, y: 22pt),
   ),
   shadow: (color: rgb("#2b2d42").transparentize(94%), offset: (x: 0pt, y: 4pt)),
   title-style: (boxed-style: none),
@@ -63,8 +63,7 @@
 #let tag(pal, t) = text(font: serif, size: 28pt, style: "italic", weight: 600, fill: pal.d, t)
 
 // ═════════════ HEADER ═════════════
-#block(width: 100%, radius: 10pt, inset: (x: 64pt, y: 30pt), stroke: 1.6pt + rgb("#d5d1e6"),
-  fill: rgb("#eeecf6"))[
+#block(width: 100%, inset: (x: 40pt, y: 6pt))[
   #grid(columns: (auto, auto, auto, 1fr), column-gutter: 54pt, align: horizon,
     text(font: display, size: 120pt, weight: 700, tracking: -0.5pt, fill: ink)[Glueball],
     line(angle: 90deg, length: 120pt, stroke: 2pt + rgb("#c7c3dc")),
@@ -80,9 +79,9 @@
   let H = 96pt
   diagram(
     node-inset: 12pt, spacing: (62pt, 46pt), edge-stroke: 2.8pt + ink.lighten(30%), mark-scale: 85%,
-    nd(lav, (0, 0), <tr>, [*AST translation* \ #sub[Triton kernels → Gluon]], w: 330pt, h: H),
-    nd(sun, (1, 0), <m>, [*Gluon model* \ $M^((r))$], w: 250pt, h: H),
-    nd(sky, (2, 0), <pf>, [*Profile* \ #sub[agent per kernel]], w: 270pt, h: H),
+    nd(lav, (0, 0), <tr>, [*AST translation* \ #sub[Triton kernels → Gluon]], w: 340pt, h: H),
+    nd(sun, (1, 0), <m>, [*Gluon model*], w: 250pt, h: H),
+    nd(sky, (2, 0), <pf>, [*Profile* \ #sub[ncu · Proton · probes]], w: 370pt, h: H),
     nd(sky, (3, 0), <pr>, [*Propose* \ #sub[ranked portfolio]], w: 270pt, h: H),
     nd(sky, (4, 0), <im>, [*Implement* \ #sub[targeted edits]], w: 270pt, h: H),
     nd(mint, (5, 0), <vf>, [*Verify* \ #sub[tests + Z3 tools]], w: 270pt, h: H),
@@ -106,7 +105,7 @@
     nd(grey, (0, 0), <rt>, [Reference Triton], w: 340pt, h: HI),
     nd(grey, (0, 1), <pt>, [PyTorch reference], w: 340pt, h: HI),
     nd(sun, (0, 2), <pg>, [Previous Gluon], w: 340pt, h: HI),
-    nd(mint, (1, 1), <sa>, [*Split & align* \ #sub[regions → tuples]], w: 310pt, h: HM),
+    nd(mint, (1, 1), <sa>, [*Split & align*], w: 310pt, h: HM),
     nd(mint, (2, 1), <eq>, [*Block-wise equivalence* \ #sub[LLM reasoning + Z3]], w: 400pt, h: HM),
     nd(mint, (3, 1), <vd>, [*Verdict*], w: 230pt, h: HM),
     nd(mint, (4, 1), <rp>, [*Correctness report*], w: 340pt, h: HM),
@@ -131,7 +130,7 @@
   let rows = ()
   for (k, e) in speed-data.enumerate() {
     let best = calc.max(..e.models.map(m => m.median))
-    rows.push(table.cell(align: left + horizon, text(size: 28pt, weight: 700, e.name)))
+    rows.push(table.cell(align: left + horizon, text(size: 26pt, weight: 700, e.name)))
     rows.push(table.cell(text(font: sans, size: 21pt, fill: muted, kind.at(k))))
     for m in e.models {
       let top = m.median == best
@@ -139,12 +138,11 @@
         text(size: 29pt, weight: if top { 700 } else { 400 }, fill: if m.median >= 1 { mint.d } else { rose.d }, m.label + "×")))
     }
   }
-  table(columns: (2.7fr, 0.95fr, 1.15fr, 1.15fr, 1.15fr, 1.05fr), rows: ROW, align: center + horizon, stroke: none, inset: (x: 10pt, y: 6pt),
+  table(columns: (3.1fr, 0.95fr, 1.1fr, 1.1fr, 1.1fr, 1fr), rows: ROW, align: center + horizon, stroke: none, inset: (x: 10pt, y: 6pt),
     fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#fbf9f3") },
     th(sun, align: left)[Workload], th(sun)[Type], ..agents.map(n => th(sun, n)),
     table.hline(stroke: 2pt + sun.s),
-    ..rows,
-    table.hline(stroke: 2pt + sun.s))
+    ..rows)
 }
 
 #let pos(b) = text(fill: mint.d, weight: 700, b)
@@ -158,8 +156,7 @@
   text(size: 24pt)[DeepSeek V4 Pro], [21], pos[+3], [0], [0], [10], [0], [7], pos[−5],
   text(size: 24pt)[DeepSeek V4 Flash], [22], pos[+2], [0], [0], [10], [0], [1], pos[−1],
   text(size: 24pt)[Meta Muse Spark 1.3], [22], pos[+2], [0], [0], [9], [0], [3], pos[−3],
-  text(size: 24pt)[GPT 5.6 Sol], [21], pos[+2], [0], [0], [9], pos[+1], [1], pos[−1],
-  table.hline(stroke: 2pt + mint.s))
+  text(size: 24pt)[GPT 5.6 Sol], [21], pos[+2], [0], [0], [9], pos[+1], [1], pos[−1])
 
 #card("1", "System: optimize, verify, benchmark", sky)[
   #fig(fit(fig-arch))
@@ -285,8 +282,7 @@ with up to 1 in-flight iteration
   mono-t("arith.subf"), mono-t("load_row − maxnumf_…"), tag-chip(mint, "fpSub"),
   mono-t("math.exp"), mono-t("exp(load_row − …)"), tag-chip(sun, "uninterpreted fn"),
   mono-t("tt.reduce (sum)"), mono-t("addf_denominator"), tag-chip(rose, "fresh symbol"),
-  mono-t("arith.divf"), mono-t("exp(…) / addf_denominator"), tag-chip(mint, "fpDiv"),
-  table.hline(stroke: 2pt + mint.s))
+  mono-t("arith.divf"), mono-t("exp(…) / addf_denominator"), tag-chip(mint, "fpDiv"))
 
 #let dialects = table(columns: (0.7fr, 0.5fr, 3.2fr), rows: 44pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 4pt),
   fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#f4faf7") },
@@ -296,8 +292,7 @@ with up to 1 in-flight iteration
   mono-t("math"), [46], text(size: 25pt)[simple ops native; exp, log, sin … uninterpreted],
   mono-t("tt"), [52], text(size: 25pt)[reshapes alias; pointer math exact; load, reduce, dot opaque],
   mono-t("scf"), [12], text(size: 25pt)[if exact; for runs once; while opaque],
-  mono-t("ttg"), [27], text(size: 25pt)[same interpreter on TTGIR; default warp partition only],
-  table.hline(stroke: 2pt + mint.s))
+  mono-t("ttg"), [27], text(size: 25pt)[same interpreter on TTGIR; default warp partition only])
 
 #let card6(x) = [
   #card("6", "Symbolic execution: a Z3 model of TTIR", mint)[
@@ -326,7 +321,6 @@ with up to 1 in-flight iteration
       ..ax-row("Async race freedom", "no unordered access pair with a write"),
       ..ax-row("Bank-conflict freedom", "same-warp threads hit distinct banks"),
       ..ax-row("Global coalescing", "warp accesses fit one aligned cache line"),
-      table.hline(stroke: 2pt + mint.s),
     ))
     #v(x)
   ]

@@ -1,2 +1,2 @@
-poster.pdf: poster.typ figures/speedups.json fonts/*
-	typst compile --font-path fonts poster.typ poster.pdf
+poster.pdf: poster.typ figures/speedups.json
+	typst compile poster.typ poster.pdf
