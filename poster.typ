@@ -34,7 +34,7 @@
   frame: (
     title-color: pal.f.lighten(45%), border-color: pal.s.lighten(35%), body-color: white,
     thickness: 1.6pt, radius: 10pt,
-    inset: (x: 44pt, y: 20pt), body-inset: (x: 48pt, y: 24pt),
+    inset: (x: 44pt, y: 16pt), body-inset: (x: 48pt, y: 18pt),
   ),
   shadow: (color: rgb("#2b2d42").transparentize(94%), offset: (x: 0pt, y: 4pt)),
   title-style: (boxed-style: none),
@@ -55,7 +55,7 @@
 #let tag(pal, t) = text(font: serif, size: 28pt, style: "italic", weight: 600, fill: pal.d, t)
 
 // ═════════════ HEADER ═════════════
-#block(width: 100%, radius: 10pt, inset: (x: 64pt, y: 38pt), stroke: 1.6pt + rgb("#d5d1e6"),
+#block(width: 100%, radius: 10pt, inset: (x: 64pt, y: 30pt), stroke: 1.6pt + rgb("#d5d1e6"),
   fill: gradient.linear(rgb("#ebe8f5"), rgb("#e4edf5"), rgb("#e2f0ea"), angle: 6deg))[
   #grid(columns: (auto, auto, auto, 1fr), column-gutter: 54pt, align: horizon,
     text(font: serif, size: 120pt, weight: 700, tracking: -0.5pt, fill: ink)[Glueball],
@@ -70,7 +70,7 @@
 #let fig-arch = {
   set par(justify: false); set text(font: serif, size: 31pt)
   diagram(
-    node-inset: 12pt, spacing: (62pt, 58pt), edge-stroke: 2.8pt + ink.lighten(30%), mark-scale: 85%,
+    node-inset: 12pt, spacing: (62pt, 46pt), edge-stroke: 2.8pt + ink.lighten(30%), mark-scale: 85%,
     nd(lav, (0, 0), <tr>, [*AST translation* \ #sub[Triton kernels → Gluon]], w: 300pt),
     nd(sun, (1, 0), <m>, [*Gluon model* \ $M^((r))$], w: 250pt),
     nd(sky, (2, 0), <pf>, [*Profile* \ #sub[agent per kernel]], w: 270pt),
@@ -92,7 +92,7 @@
 #let fig-corr = {
   set par(justify: false); set text(font: serif, size: 31pt)
   diagram(
-    node-inset: 12pt, spacing: (100pt, 34pt), edge-stroke: 2.8pt + ink.lighten(30%), mark-scale: 85%,
+    node-inset: 12pt, spacing: (100pt, 22pt), edge-stroke: 2.8pt + ink.lighten(30%), mark-scale: 85%,
     nd(grey, (0, 0), <rt>, [Reference Triton], w: 340pt),
     nd(grey, (0, 1), <pt>, [PyTorch reference], w: 340pt),
     nd(sun, (0, 2), <pg>, [Previous Gluon], w: 340pt),
@@ -116,115 +116,197 @@
 #let speed-data = json("figures/speedups.json")
 #let agents = ("DeepSeek V4 Pro", "DeepSeek V4 Flash", "Meta Muse Spark 1.3", "GPT 5.6 Sol")
 #let kind = ("Model", "Model", "Model", "Kernel", "Kernel", "Kernel")
+#let th(pal, b, ..a) = table.cell(fill: pal.f, ..a, text(font: sans, weight: 700, size: 22pt, fill: pal.d, b))
+#let ROW = 46pt
+
 #let fig-speed = {
-  let cell-h(b, ..a) = table.cell(fill: sun.f, ..a, text(font: sans, weight: 700, size: 27pt, fill: sun.d, b))
   let rows = ()
   for (k, e) in speed-data.enumerate() {
     let best = calc.max(..e.models.map(m => m.median))
-    rows.push(table.cell(align: left + horizon, text(size: 34pt, weight: 700, e.name)))
-    rows.push(table.cell(text(font: sans, size: 24pt, fill: muted, kind.at(k))))
+    rows.push(table.cell(align: left + horizon, text(size: 28pt, weight: 700, e.name)))
+    rows.push(table.cell(text(font: sans, size: 21pt, fill: muted, kind.at(k))))
     for m in e.models {
       let top = m.median == best
       rows.push(table.cell(fill: if top { sun.f.lighten(35%) },
-        text(size: 36pt, weight: if top { 700 } else { 400 }, fill: if m.median >= 1 { mint.d } else { rose.d }, m.label + "×")))
+        text(size: 29pt, weight: if top { 700 } else { 400 }, fill: if m.median >= 1 { mint.d } else { rose.d }, m.label + "×")))
     }
   }
-  table(columns: (2.5fr, 0.9fr, 1.3fr, 1.3fr, 1.5fr, 1.2fr), rows: 70pt, align: center + horizon, stroke: none, inset: (x: 18pt, y: 8pt),
+  table(columns: (2.7fr, 0.95fr, 1.15fr, 1.15fr, 1.15fr, 1.05fr), rows: ROW, align: center + horizon, stroke: none, inset: (x: 10pt, y: 3pt),
     fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#fbf9f3") },
-    cell-h(align: left)[Workload], cell-h[Type], ..agents.map(n => cell-h(n)),
+    th(sun, align: left)[Workload], th(sun)[Type], ..agents.map(n => th(sun, n)),
     table.hline(stroke: 2pt + sun.s),
     ..rows,
     table.hline(stroke: 2pt + sun.s))
 }
 
+#let pos(b) = text(fill: mint.d, weight: 700, b)
+#let fig-bugs = table(columns: (2.9fr, 1.1fr, 1fr, 1fr, 1fr, 1.1fr, 1fr, 1fr, 1fr), rows: ROW,
+  align: (left + horizon, center + horizon), stroke: none, inset: (x: 8pt, y: 6pt),
+  fill: (_, y) => if y > 1 and calc.even(y) { rgb("#f4faf7") },
+  table.cell(rowspan: 2, th(mint, align: left)[Model]),
+  table.cell(colspan: 4, th(mint)[Generic suite]), table.cell(colspan: 4, th(mint)[Sync suite]),
+  th(mint)[Bugs↑], th(mint)[Δ], th(mint)[FP↓], th(mint)[Δ], th(mint)[Bugs↑], th(mint)[Δ], th(mint)[FP↓], th(mint)[Δ],
+  table.hline(stroke: 2pt + mint.s),
+  text(size: 27pt)[DeepSeek V4 Pro], [21], pos[+3], [0], [0], [10], [0], [7], pos[−5],
+  text(size: 27pt)[DeepSeek V4 Flash], [22], pos[+2], [0], [0], [10], [0], [1], pos[−1],
+  text(size: 27pt)[Meta Muse Spark 1.3], [22], pos[+2], [0], [0], [9], [0], [3], pos[−3],
+  text(size: 27pt)[GPT 5.6 Sol], [21], pos[+2], [0], [0], [9], pos[+1], [1], pos[−1],
+  table.hline(stroke: 2pt + mint.s))
+
 #card("01", "System: optimize, verify, benchmark", sky)[
   #fig(fit(fig-arch))[*Figure 1.* Triton kernels are translated to Gluon; each round profiles, proposes, implements and verifies changes, then benchmarks the whole model on hidden, re-randomized shapes.]
 ]
-#v(20pt)
+#v(14pt)
 #card("02", "Correctness pipeline: LLM reasoning with Z3 evidence", mint)[
   #fig(fit(fig-corr))[*Figure 2.* Reference and previous kernels are split into aligned symbolic regions; failures become counterexamples reproduced on GPU.]
 ]
-#v(20pt)
-#card("03", "Whole-model speedups over Triton", sun)[
-  #fig(fig-speed)[*Table 1.* Median best-round speedup over the Triton baseline across input shapes (NVIDIA DGX Spark GB10, 6 rounds). Green: at or above parity; shaded: best agent per workload.]
-]
-#v(20pt)
+#v(14pt)
+#grid(columns: (1fr, 1fr), column-gutter: 28pt,
+  card("03", "Whole-model speedups over Triton", sun)[
+    #fig(fig-speed)[*Table 1.* Median best-round speedup over Triton (GB10, 6 rounds); shaded = best agent.]],
+  card("04", "Verification finds more bugs", mint)[
+    #fig(fig-bugs)[*Table 2.* Generic suite: 24 bugs, 26 controls; sync suite: 10 bugs, 12 controls. Δ = change from adding Glueball.]],
+)
+#v(14pt)
 
-// ═════════════ TWO COLUMNS ═════════════
-#let code(body) = block(fill: rgb("#f6f4f9"), stroke: 2pt + grey.s, radius: 6pt, inset: 22pt, width: 100%,
-  text(font: mono, size: 26pt, body))
-#let hd(..a, b) = table.cell(fill: mint.f, ..a.named(), text(font: sans, fill: mint.d, weight: 700, size: 24pt, b))
-#let pos(b) = text(fill: mint.d, weight: 700, b)
-#let lab(pal, t) = text(font: sans, weight: 700, size: 27pt, fill: pal.d, t)
+// ───────── case study (full width) ─────────
+#let code(body) = block(fill: rgb("#f6f4f9"), stroke: 2pt + grey.s, radius: 6pt, inset: 20pt, width: 100%,
+  text(font: mono, size: 22pt, body))
+#let lab(pal, t) = block(below: 8pt, text(font: sans, weight: 700, size: 24pt, fill: pal.d, t))
+#card("05", "Case study: Z3 exposes a pipelining bug", rose)[
+  #grid(columns: (1fr, 1.2fr, 0.9fr), column-gutter: 26pt,
+    [#lab(rose)[(a) The bug: waits for too few copies]
+     #code[```python
+# Correct
+cp.wait_group(num_buffers - 1)
+# Bug
+cp.wait_group(num_buffers)
+
+perform_add(
+    a_smem[read_idx % num_buffers],
+    b_smem[read_idx % num_buffers],
+)
+```]
+     #v(10pt)
+     #lab(rose)[(c) Z3 verdict]
+     #code[```
+wait_group(2):
+DATA RACE detected:
+  copy0.smem_write
+    STORE SHARED@0x100
+    proxy=ASYNC_COPY
+  <-race->
+  read buffer0
+    LOAD SHARED@0x100
+    proxy=GENERIC
+wait_group(1):
+RACE-FREE: proven
+```]],
+    [#lab(rose)[(b) Symbolic model written by the LLM]
+     #code[```python
+def build(num_buffers, wait_arg):
+    ctx = GluonVerificationContext()
+    r0, w0 = ctx.map_async_copy_global_to_shared(
+        0, src_addr=0x1000, dst_addr=0x100,
+        size=4, label='copy0')
+    ctx.map_async_commit_group(0)
+    r1, w1 = ctx.map_async_copy_global_to_shared(
+        0, src_addr=0x2000, dst_addr=0x200,
+        size=4, label='copy1')
+    ctx.map_async_commit_group(0)
+    wait = ctx.map_async_wait_group(
+        0, num_outstanding=wait_arg,
+        label=f'wait({wait_arg})')
+    load = ctx.map_load(
+        0, 0x100, Space.SHARED,
+        size=4, label='read buffer0')
+    ctx.program_order(wait.id, load.id)
+    return ctx
+
+for wait_arg in [2, 1]:
+    safe, model = build(
+        2, wait_arg).check_async_race_freedom()
+```]],
+    [#lab(rose)[(d) Pipeline-level witness]
+     #code[```
+check_pipeline_stage_isolation(
+    num_stages=2, max_inflight=2)
+
+PIPELINE COLLISION:
+producer and consumer share a slot
+witness: [iter_p = 2, lag = 2]
+-> (False, [iter_p = 2, lag = 2])
+
+max_inflight=1:
+
+STAGE-ISOLATED:
+num_stages=2 never aliases
+with up to 1 in-flight iteration
+-> (True, None)
+```]
+     #v(14pt)
+     #text(size: 27pt)[*Figure 5.* The consumer reads a buffer whose async copy is still outstanding. The LLM translates the pipeline into the Gluon-to-Z3 library; Z3 names the racing store and load (c), and a pipeline-level check returns a concrete iteration where producer and consumer alias one slot (d).]],
+  )
+]
+#v(14pt)
+
+// ═════════════ TWO COLUMNS: the two halves of the correctness system ═════════════
+#let tag-chip(pal, t) = box(fill: pal.f, stroke: 1.5pt + pal.s, radius: 5pt, inset: (x: 10pt, y: 3pt),
+  text(font: sans, size: 20pt, weight: 600, fill: pal.d, t))
+#let mono-t(t) = text(font: mono, size: 22pt, t)
+
+#let ttir-map = table(columns: (1.45fr, 2.1fr, 1.1fr), rows: 40pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 4pt),
+  fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#f4faf7") },
+  th(mint)[TTIR op], th(mint)[Z3 term], th(mint)[Kind],
+  table.hline(stroke: 2pt + mint.s),
+  mono-t("tt.load"), mono-t("load_row"), tag-chip(rose, "fresh symbol"),
+  mono-t("tt.reduce (max)"), mono-t("maxnumf_row_minus_max"), tag-chip(rose, "fresh symbol"),
+  mono-t("arith.subf"), mono-t("load_row − maxnumf_…"), tag-chip(mint, "fpSub"),
+  mono-t("math.exp"), mono-t("exp(load_row − …)"), tag-chip(sun, "uninterpreted fn"),
+  mono-t("tt.reduce (sum)"), mono-t("addf_denominator"), tag-chip(rose, "fresh symbol"),
+  mono-t("arith.divf"), mono-t("exp(…) / addf_denominator"), tag-chip(mint, "fpDiv"),
+  table.hline(stroke: 2pt + mint.s))
+
+#let dialects = table(columns: (0.7fr, 0.5fr, 3.2fr), rows: 44pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 4pt),
+  fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#f4faf7") },
+  th(mint)[Dialect], th(mint)[Ops], th(mint)[How it is modeled],
+  table.hline(stroke: 2pt + mint.s),
+  mono-t("arith"), [51], text(size: 25pt)[native Z3 bit-vector / floating-point operators],
+  mono-t("math"), [46], text(size: 25pt)[simple ops native; exp, log, sin … uninterpreted],
+  mono-t("tt"), [52], text(size: 25pt)[reshapes alias; pointer math exact; load, reduce, dot opaque],
+  mono-t("scf"), [12], text(size: 25pt)[if exact; for runs once; while opaque],
+  mono-t("ttg"), [27], text(size: 25pt)[same interpreter on TTGIR; default warp partition only],
+  table.hline(stroke: 2pt + mint.s))
 
 #let colL = [
-  #card("04", "Motivation & contributions", rose)[
-    Tests cover little of the execution space, so agents can *overfit to tested inputs* and miss _races_ and _barrier_ bugs in asynchronous Hopper/Blackwell kernels.
-
-    *Glueball* is the first system to equip LLM agents with *theorem-proving tools* during GPU kernel generation. It targets *Gluon*, Triton's tile-level DSL with explicit layouts and warp roles, whose structured semantics suit formal reasoning.
-    - *Interactive profiling:* profilers, debuggers and compilers.
-    - *Theorem provers as tools:* Z3 via our Gluon-to-Z3 library.
-    - *Real-world testing:* whole models, not isolated kernels.
-  ]
-  #v(20pt, weak: false)#v(1fr)
-  #card("05", "Formal tools in the loop", mint)[
-    Equivalence is undecidable and GPU state spaces explode, so verification is *hybrid*.
-    - *Symbolic execution* maps IR ops to Z3 terms over symbolic inputs; softmax is recovered as $exp(x - m) / sum exp(x - m)$.
-    - *Opaque operations* (reductions, memory, sync) split a kernel into *symbolic regions*: Z3 inside, the LLM across.
-    - *Gluon-to-Z3 library* models async copies, barriers and shared memory for race and pipeline checks.
-  ]
-  #v(20pt, weak: false)#v(1fr)
-  #card("06", "Conclusions", lav)[
-    Formal tools in the loop *find more bugs with fewer false positives*, while agents gain from data movement and algorithmic changes. *Next:* multi-GPU kernels and constraint-guided schedule search.
+  #card("06", "Symbolic execution: a Z3 model of TTIR", mint)[
+    Each MLIR op becomes a Z3 term over one representative scalar per tensor. Ops the model cannot capture become *fresh opaque symbols* that split the kernel into *symbolic regions*; Z3 reasons inside, the LLM across.
+    #v(8pt)
+    #fig(ttir-map)[*Softmax example.* The stored value reduces to #text(font: mono, size: 22pt)[exp(load_row − maxnumf_row_minus_max) / addf_denominator].]
+    #v(4pt)
+    *Coverage:* #mono-t("arith"), #mono-t("math") map to native Z3 bit-vector and floating-point operators (transcendentals are uninterpreted); #mono-t("tt") reshapes alias, loads and reductions are opaque; #mono-t("scf") loops run once; #mono-t("ttg") reuses the interpreter for TTGIR.
   ]
 ]
 
+#let ax-row(n, d) = (table.cell(text(font: sans, weight: 700, size: 22pt, fill: mint.d, n)), text(size: 25pt, d))
 #let colR = [
-  #card("07", "Hardware-aware optimization", sky)[
-    - *Profile:* Nsight Compute and source probes rank kernels by run-time share.
-    - *Propose:* one agent merges reports and history into a ranked multi-kernel portfolio.
-    - *Implement:* edits pass compilation, numerics (FpSan) and formal checks.
-    - *Benchmark:* hidden, re-randomized inputs; only verified proposals commit.
-  ]
-  #v(20pt, weak: false)#v(1fr)
-  #card("08", "Verification finds more bugs", mint)[
-    #fig(
-      table(columns: (3.4fr, 1.3fr, 1fr, 1fr, 1fr, 1.3fr, 1fr, 1fr, 1fr), align: (left + horizon, center + horizon),
-        rows: 50pt, stroke: none, inset: (x: 9pt, y: 6pt),
-        fill: (_, y) => if y > 1 and calc.even(y) { rgb("#f4faf7") },
-        table.cell(rowspan: 2, hd[Model]),
-        table.cell(colspan: 4, hd[Generic suite]), table.cell(colspan: 4, hd[Sync suite]),
-        hd[Bugs↑], hd[Δ], hd[FP↓], hd[Δ], hd[Bugs↑], hd[Δ], hd[FP↓], hd[Δ],
-        table.hline(stroke: 2pt + mint.s),
-        [DeepSeek V4 Pro], [21], pos[+3], [0], [0], [10], [0], [7], pos[−5],
-        [DeepSeek V4 Flash], [22], pos[+2], [0], [0], [10], [0], [1], pos[−1],
-        [Meta Muse Spark 1.3], [22], pos[+2], [0], [0], [9], [0], [3], pos[−3],
-        [GPT 5.6 Sol], [21], pos[+2], [0], [0], [9], pos[+1], [1], pos[−1],
-        table.hline(stroke: 2pt + mint.s),
-      ))[*Figure 4.* Δ = gain from adding Glueball; Z3 *cuts sync false positives sharply*.]
-  ]
-  #v(20pt, weak: false)#v(1fr)
-  #card("09", "Case study: a pipelining bug", rose)[
-    #grid(columns: (1fr, 1fr), column-gutter: 24pt,
-      [#lab(rose)[Buggy kernel] #v(4pt)
-       #code[```python
-# correct
-wait_group(n - 1)
-# bug: copy in flight
-wait_group(n)
-add(a_smem[i % n],
-    b_smem[i % n])
-```]],
-      [#lab(rose)[Z3 verdict] #v(4pt)
-       #code[```
-wait_group(2): DATA RACE
- async STORE @0x100
- <-race->
- LOAD  @0x100
-wait_group(1): RACE-FREE
-witness: iter_p=2, lag=2
-```]])
-    #cap[*Figure 5.* Waiting for too few async copies leaves a live buffer; Z3 exposes the race.]
+  #card("07", "The Gluon-to-Z3 library", mint)[
+    Hardware actions become *events* in a bounded graph ordered by _happens-before_ and _program order_. *Axioms* encode ordering rules; each *theorem* asks Z3 to satisfy the *negation* of a property: *UNSAT* proves it for every schedule, *SAT* gives a counterexample.
+    #v(10pt)
+    #fig(table(columns: (1.15fr, 2.5fr), rows: 38pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 3pt),
+      fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#f4faf7") },
+      th(mint, colspan: 2, align: left)[Axioms: hardware ordering rules],
+      ..ax-row("Sequential consistency", "events form an acyclic timeline"),
+      ..ax-row("CTA barrier", "gl.barrier(): before ⇒ after, all threads"),
+      ..ax-row("Async-proxy fence", "orders generic writes before TMA / MMA reads"),
+      ..ax-row("Mbarrier sync", "arrival and byte accounting; short ⇒ deadlock"),
+      ..ax-row("Manual ordering", "assert or deny a happens-before edge"),
+      th(rose, colspan: 2, align: left)[Theorems: safety properties],
+      ..ax-row("Async race freedom", "no unordered access pair with a write"),
+      ..ax-row("Bank-conflict freedom", "same-warp threads hit distinct banks"),
+      ..ax-row("Global coalescing", "warp accesses fit one aligned cache line"),
+      table.hline(stroke: 2pt + mint.s),
+    ))[*Event vocabulary:* Space, Proxy, EventType, MBarrier.]
   ]
 ]
 
