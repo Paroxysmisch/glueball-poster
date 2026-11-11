@@ -124,8 +124,8 @@
 #let speed-data = json("figures/speedups.json")
 #let agents = ("DeepSeek V4 Pro", "DeepSeek V4 Flash", "Meta Muse Spark 1.3", "GPT 5.6 Sol")
 #let kind = ("Model", "Model", "Model", "Kernel", "Kernel", "Kernel")
-#let th(pal, b, ..a) = table.cell(fill: pal.f, ..a, text(font: sans, weight: 700, size: 22pt, fill: pal.d, b))
-#let ROW = 52pt
+#let th(pal, b, ..a) = table.cell(fill: pal.f, ..a, text(font: sans, weight: 700, size: 21pt, fill: pal.d, par(leading: 0.55em, b)))
+#let ROW = 62pt
 
 #let fig-speed = {
   let rows = ()
@@ -139,7 +139,7 @@
         text(size: 29pt, weight: if top { 700 } else { 400 }, fill: if m.median >= 1 { mint.d } else { rose.d }, m.label + "×")))
     }
   }
-  table(columns: (2.7fr, 0.95fr, 1.15fr, 1.15fr, 1.15fr, 1.05fr), rows: ROW, align: center + horizon, stroke: none, inset: (x: 10pt, y: 3pt),
+  table(columns: (2.7fr, 0.95fr, 1.15fr, 1.15fr, 1.15fr, 1.05fr), rows: ROW, align: center + horizon, stroke: none, inset: (x: 10pt, y: 6pt),
     fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#fbf9f3") },
     th(sun, align: left)[Workload], th(sun)[Type], ..agents.map(n => th(sun, n)),
     table.hline(stroke: 2pt + sun.s),
@@ -176,13 +176,17 @@
 #v(14pt)
 
 // ───────── case study (full width) ─────────
-#let code(body) = block(fill: rgb("#f6f4f9"), stroke: 2pt + grey.s, radius: 6pt, inset: 20pt, width: 100%,
+#let code(body, h: auto) = block(fill: rgb("#f6f4f9"), stroke: 2pt + grey.s, radius: 6pt,
+  inset: 20pt, width: 100%, height: h,
   text(font: mono, size: 23pt, body))
-#let lab(pal, t) = block(below: 8pt, text(font: sans, weight: 700, size: 24pt, fill: pal.d, t))
-#card("5", "Case study: Z3 exposes a pipelining bug", rose)[
-  #grid(columns: (1fr, 1.2fr, 0.9fr), column-gutter: 26pt,
-    [#lab(rose)[(a) The bug: waits for too few copies]
-     #code[```python
+#let lab(pal, t) = block(below: 16pt, text(font: sans, weight: 700, size: 24pt, fill: pal.d, t))
+
+#let case-cols(hm) = {
+  let bh = if hm == none { auto } else { hm }
+  let fx = if hm == none { auto } else { 1fr }
+  (
+  block(height: bh)[#lab(rose)[(a) The bug: waits for too few copies]
+   #code[```python
 # Correct
 cp.wait_group(num_buffers - 1)
 # Bug
@@ -193,9 +197,9 @@ perform_add(
     b_smem[read_idx % num_buffers],
 )
 ```]
-     #v(10pt)
-     #lab(rose)[(c) Z3 verdict]
-     #code[```
+   #v(18pt)
+   #lab(rose)[(c) Z3 verdict]
+   #code(h: fx)[```
 wait_group(2):
 DATA RACE detected:
   copy0.smem_write
@@ -208,8 +212,8 @@ DATA RACE detected:
 wait_group(1):
 RACE-FREE: proven
 ```]],
-    [#lab(rose)[(b) Symbolic model written by the LLM]
-     #code[```python
+  block(height: bh)[#lab(rose)[(b) Symbolic model written by the LLM]
+   #code(h: fx)[```python
 def build(num_buffers, wait_arg):
     ctx = GluonVerificationContext()
     r0, w0 = ctx.map_async_copy_global_to_shared(
@@ -233,8 +237,8 @@ for wait_arg in [2, 1]:
     safe, model = build(
         2, wait_arg).check_async_race_freedom()
 ```]],
-    [#lab(rose)[(d) Pipeline-level witness]
-     #code[```
+  block(height: bh)[#lab(rose)[(d) Pipeline-level witness]
+   #code(h: fx)[```
 check_pipeline_stage_isolation(
     num_stages=2, max_inflight=2)
 
@@ -249,8 +253,21 @@ STAGE-ISOLATED:
 num_stages=2 never aliases
 with up to 1 in-flight iteration
 -> (True, None)
-```]],
-  )
+```]
+   #v(14pt)
+   #text(size: 27pt)[Waiting for too few async copies lets the consumer read a buffer that is still being filled. The LLM encodes the pipeline (b); Z3 names the racing store and load (c), and a pipeline-level check yields a concrete iteration where producer and consumer share one slot (d).]
+   ],
+)
+}
+
+#card("5", "Case study: Z3 exposes a pipelining bug", rose)[
+  #layout(size => {
+    let cw = (size.width - 52pt) / 3.1
+    let widths = (cw, cw * 1.2, cw * 0.9)
+    let hs = case-cols(none).zip(widths).map(((c, w)) => measure(width: w, c).height)
+    let hm = calc.max(..hs)
+    grid(columns: (1fr, 1.2fr, 0.9fr), column-gutter: 26pt, ..case-cols(hm))
+  })
 ]
 #v(14pt)
 
@@ -289,8 +306,6 @@ with up to 1 in-flight iteration
     #fig(ttir-map)
     #v(8pt)
     Chasing the stored value gives a single closed form, #text(font: mono, size: 22pt)[exp(load_row − maxnumf_row_minus_max) / addf_denominator], while the loads and reductions stay opaque.
-    #v(4pt)
-    *Coverage:* #mono-t("arith"), #mono-t("math") map to native Z3 bit-vector and floating-point operators (transcendentals are uninterpreted); #mono-t("tt") reshapes alias, loads and reductions are opaque; #mono-t("scf") loops run once; #mono-t("ttg") reuses the interpreter for TTGIR.#v(x)
   ]
 ]
 
