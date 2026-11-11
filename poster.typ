@@ -13,8 +13,8 @@
 #let rose = (f: rgb("#f5e0dc"), s: rgb("#d9a096"), d: rgb("#a8483c"))  // retry / failure
 #let grey = (f: rgb("#f0eef1"), s: rgb("#b9b6c0"), d: rgb("#5b586a"))
 
-#let serif = "Libertinus Serif"
-#let display = "Libertinus Serif"
+#let serif = "Source Serif 4"
+#let display = "Source Serif 4 Display"
 #let sans = "Libre Franklin"
 #let mono = "Source Code Pro"
 
@@ -64,9 +64,9 @@
 
 // ═════════════ HEADER ═════════════
 #block(width: 100%, radius: 10pt, inset: (x: 64pt, y: 30pt), stroke: 1.6pt + rgb("#d5d1e6"),
-  fill: gradient.linear(rgb("#ebe8f5"), rgb("#e4edf5"), rgb("#e2f0ea"), angle: 6deg))[
+  fill: rgb("#eeecf6"))[
   #grid(columns: (auto, auto, auto, 1fr), column-gutter: 54pt, align: horizon,
-    text(font: serif, size: 120pt, weight: 700, tracking: -0.5pt, fill: ink)[Glueball],
+    text(font: display, size: 120pt, weight: 700, tracking: -0.5pt, fill: ink)[Glueball],
     line(angle: 90deg, length: 120pt, stroke: 2pt + rgb("#c7c3dc")),
     text(font: serif, size: 54pt, weight: 600, fill: ink)[Agentic Generation and Verification of \ Hardware-Optimized Gluon Kernels],
     align(right, text(font: sans, size: 30pt, fill: muted)[Anonymous authors]),
@@ -80,7 +80,7 @@
   let H = 96pt
   diagram(
     node-inset: 12pt, spacing: (62pt, 46pt), edge-stroke: 2.8pt + ink.lighten(30%), mark-scale: 85%,
-    nd(lav, (0, 0), <tr>, [*AST translation* \ #sub[Triton kernels → Gluon]], w: 300pt, h: H),
+    nd(lav, (0, 0), <tr>, [*AST translation* \ #sub[Triton kernels → Gluon]], w: 330pt, h: H),
     nd(sun, (1, 0), <m>, [*Gluon model* \ $M^((r))$], w: 250pt, h: H),
     nd(sky, (2, 0), <pf>, [*Profile* \ #sub[agent per kernel]], w: 270pt, h: H),
     nd(sky, (3, 0), <pr>, [*Propose* \ #sub[ranked portfolio]], w: 270pt, h: H),
@@ -113,10 +113,8 @@
     nd(rose, (3, 3), <ce>, [*Counterexample* \ #sub[witness on real GPU]], w: 330pt, h: HM, dash: "dashed"),
     edge(<rt>, (0.5, 0), (0.5, 1), <sa>, "->"), edge(<pt>, <sa>, "->"), edge(<pg>, (0.5, 2), (0.5, 1), <sa>, "->"),
     edge(<sa>, <eq>, "->"), edge(<eq>, <vd>, "->"),
-    edge(<vd>, <rp>, "->", stroke: 2.8pt + mint.s),
-    node((3.5, 0.62), tag(mint, [correct]), stroke: none),
-    edge(<vd>, <ce>, "->", stroke: 2.8pt + rose.s),
-    node((3.34, 2), tag(rose, [incorrect]), stroke: none, fill: white, inset: 4pt),
+    edge(<vd>, <rp>, "->", stroke: 2.8pt + mint.s, label: tag(mint, [correct]), label-side: left, label-sep: 12pt),
+    edge(<vd>, <ce>, "->", stroke: 2.8pt + rose.s, label: tag(rose, [incorrect]), label-side: left, label-sep: 14pt),
     edge(<ce>, (1, 3), <sa>, "-->", stroke: 2.8pt + rose.s),
     node((2, 3), tag(rose, [does not reproduce → retry]), stroke: none, fill: white, inset: 8pt),
   )
@@ -150,17 +148,17 @@
 }
 
 #let pos(b) = text(fill: mint.d, weight: 700, b)
-#let fig-bugs = table(columns: (2.9fr, 1.1fr, 1fr, 1fr, 1fr, 1.1fr, 1fr, 1fr, 1fr), rows: ROW,
+#let fig-bugs = table(columns: (3.3fr, 1.1fr, 1fr, 1fr, 1fr, 1.1fr, 1fr, 1fr, 1fr), rows: ROW,
   align: (left + horizon, center + horizon), stroke: none, inset: (x: 8pt, y: 6pt),
   fill: (_, y) => if y > 1 and calc.even(y) { rgb("#f4faf7") },
   table.cell(rowspan: 2, th(mint, align: left)[Model]),
   table.cell(colspan: 4, th(mint)[Generic suite]), table.cell(colspan: 4, th(mint)[Sync suite]),
   th(mint)[Bugs↑], th(mint)[Δ], th(mint)[FP↓], th(mint)[Δ], th(mint)[Bugs↑], th(mint)[Δ], th(mint)[FP↓], th(mint)[Δ],
   table.hline(stroke: 2pt + mint.s),
-  text(size: 27pt)[DeepSeek V4 Pro], [21], pos[+3], [0], [0], [10], [0], [7], pos[−5],
-  text(size: 27pt)[DeepSeek V4 Flash], [22], pos[+2], [0], [0], [10], [0], [1], pos[−1],
-  text(size: 27pt)[Meta Muse Spark 1.3], [22], pos[+2], [0], [0], [9], [0], [3], pos[−3],
-  text(size: 27pt)[GPT 5.6 Sol], [21], pos[+2], [0], [0], [9], pos[+1], [1], pos[−1],
+  text(size: 24pt)[DeepSeek V4 Pro], [21], pos[+3], [0], [0], [10], [0], [7], pos[−5],
+  text(size: 24pt)[DeepSeek V4 Flash], [22], pos[+2], [0], [0], [10], [0], [1], pos[−1],
+  text(size: 24pt)[Meta Muse Spark 1.3], [22], pos[+2], [0], [0], [9], [0], [3], pos[−3],
+  text(size: 24pt)[GPT 5.6 Sol], [21], pos[+2], [0], [0], [9], pos[+1], [1], pos[−1],
   table.hline(stroke: 2pt + mint.s))
 
 #card("1", "System: optimize, verify, benchmark", sky)[
