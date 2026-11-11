@@ -39,16 +39,24 @@
   shadow: (color: rgb("#2b2d42").transparentize(94%), offset: (x: 0pt, y: 4pt)),
   title-style: (boxed-style: none),
   title: text(font: serif, size: 40pt, weight: 700, fill: pal.d)[
-    #text(font: sans, size: 26pt, weight: 600, fill: pal.s, tracking: 1.5pt)[#num]#h(20pt)#title],
+    #box(fill: pal.s, radius: 100%, inset: (x: 15pt, y: 6pt), baseline: 0.02em,
+      text(font: sans, size: 26pt, weight: 700, fill: white)[#num])#h(18pt)#title],
   breakable: false, width: 100%, body)
 
 #let fit(body) = layout(size => {
   let m = measure(body)
   if m.width > size.width { scale(size.width / m.width * 100%, reflow: true, body) } else { body }
 })
+#let pair(a, b, gutter: 28pt) = layout(size => {
+  let w = (size.width - gutter) / 2
+  let ha = measure(width: w, a(0pt)).height
+  let hb = measure(width: w, b(0pt)).height
+  let hm = calc.max(ha, hb)
+  grid(columns: (1fr, 1fr), column-gutter: gutter, a(hm - ha), b(hm - hb))
+})
 #let cap(body) = block(width: 100%, inset: (top: 14pt),
   text(font: sans, size: 25pt, fill: muted, body))
-#let fig(body, caption) = block(width: 100%, breakable: false)[#align(center, body) #cap(caption)]
+#let fig(body) = block(width: 100%, breakable: false, align(center, body))
 #let sub(t) = text(font: serif, size: 26pt, fill: muted, style: "italic", t)
 #let nd(pal, pos, name, body, w: 230pt, dash: none) = node(pos, name: name, width: w, fill: pal.f,
   stroke: (paint: pal.s, thickness: 2.5pt, dash: dash), corner-radius: 7pt, inset: 20pt, outset: 7pt, body)
@@ -117,7 +125,7 @@
 #let agents = ("DeepSeek V4 Pro", "DeepSeek V4 Flash", "Meta Muse Spark 1.3", "GPT 5.6 Sol")
 #let kind = ("Model", "Model", "Model", "Kernel", "Kernel", "Kernel")
 #let th(pal, b, ..a) = table.cell(fill: pal.f, ..a, text(font: sans, weight: 700, size: 22pt, fill: pal.d, b))
-#let ROW = 46pt
+#let ROW = 52pt
 
 #let fig-speed = {
   let rows = ()
@@ -153,27 +161,25 @@
   text(size: 27pt)[GPT 5.6 Sol], [21], pos[+2], [0], [0], [9], pos[+1], [1], pos[−1],
   table.hline(stroke: 2pt + mint.s))
 
-#card("01", "System: optimize, verify, benchmark", sky)[
-  #fig(fit(fig-arch))[*Figure 1.* Triton kernels are translated to Gluon; each round profiles, proposes, implements and verifies changes, then benchmarks the whole model on hidden, re-randomized shapes.]
+#card("1", "System: optimize, verify, benchmark", sky)[
+  #fig(fit(fig-arch))
 ]
 #v(14pt)
-#card("02", "Correctness pipeline: LLM reasoning with Z3 evidence", mint)[
-  #fig(fit(fig-corr))[*Figure 2.* Reference and previous kernels are split into aligned symbolic regions; failures become counterexamples reproduced on GPU.]
+#card("2", "Correctness pipeline: LLM reasoning with Z3 evidence", mint)[
+  #fig(fit(fig-corr))
 ]
 #v(14pt)
-#grid(columns: (1fr, 1fr), column-gutter: 28pt,
-  card("03", "Whole-model speedups over Triton", sun)[
-    #fig(fig-speed)[*Table 1.* Median best-round speedup over Triton (GB10, 6 rounds); shaded = best agent.]],
-  card("04", "Verification finds more bugs", mint)[
-    #fig(fig-bugs)[*Table 2.* Generic suite: 24 bugs, 26 controls; sync suite: 10 bugs, 12 controls. Δ = change from adding Glueball.]],
+#pair(
+  x => card("3", "Whole-model speedups over Triton", sun)[#fig(fig-speed)#v(x)],
+  x => card("4", "Verification finds more bugs", mint)[#fig(fig-bugs)#v(x)],
 )
 #v(14pt)
 
 // ───────── case study (full width) ─────────
 #let code(body) = block(fill: rgb("#f6f4f9"), stroke: 2pt + grey.s, radius: 6pt, inset: 20pt, width: 100%,
-  text(font: mono, size: 22pt, body))
+  text(font: mono, size: 23pt, body))
 #let lab(pal, t) = block(below: 8pt, text(font: sans, weight: 700, size: 24pt, fill: pal.d, t))
-#card("05", "Case study: Z3 exposes a pipelining bug", rose)[
+#card("5", "Case study: Z3 exposes a pipelining bug", rose)[
   #grid(columns: (1fr, 1.2fr, 0.9fr), column-gutter: 26pt,
     [#lab(rose)[(a) The bug: waits for too few copies]
      #code[```python
@@ -243,9 +249,7 @@ STAGE-ISOLATED:
 num_stages=2 never aliases
 with up to 1 in-flight iteration
 -> (True, None)
-```]
-     #v(14pt)
-     #text(size: 27pt)[*Figure 5.* The consumer reads a buffer whose async copy is still outstanding. The LLM translates the pipeline into the Gluon-to-Z3 library; Z3 names the racing store and load (c), and a pipeline-level check returns a concrete iteration where producer and consumer alias one slot (d).]],
+```]],
   )
 ]
 #v(14pt)
@@ -278,19 +282,21 @@ with up to 1 in-flight iteration
   mono-t("ttg"), [27], text(size: 25pt)[same interpreter on TTGIR; default warp partition only],
   table.hline(stroke: 2pt + mint.s))
 
-#let colL = [
-  #card("06", "Symbolic execution: a Z3 model of TTIR", mint)[
+#let card6(x) = [
+  #card("6", "Symbolic execution: a Z3 model of TTIR", mint)[
     Each MLIR op becomes a Z3 term over one representative scalar per tensor. Ops the model cannot capture become *fresh opaque symbols* that split the kernel into *symbolic regions*; Z3 reasons inside, the LLM across.
     #v(8pt)
-    #fig(ttir-map)[*Softmax example.* The stored value reduces to #text(font: mono, size: 22pt)[exp(load_row − maxnumf_row_minus_max) / addf_denominator].]
+    #fig(ttir-map)
+    #v(8pt)
+    Chasing the stored value gives a single closed form, #text(font: mono, size: 22pt)[exp(load_row − maxnumf_row_minus_max) / addf_denominator], while the loads and reductions stay opaque.
     #v(4pt)
-    *Coverage:* #mono-t("arith"), #mono-t("math") map to native Z3 bit-vector and floating-point operators (transcendentals are uninterpreted); #mono-t("tt") reshapes alias, loads and reductions are opaque; #mono-t("scf") loops run once; #mono-t("ttg") reuses the interpreter for TTGIR.
+    *Coverage:* #mono-t("arith"), #mono-t("math") map to native Z3 bit-vector and floating-point operators (transcendentals are uninterpreted); #mono-t("tt") reshapes alias, loads and reductions are opaque; #mono-t("scf") loops run once; #mono-t("ttg") reuses the interpreter for TTGIR.#v(x)
   ]
 ]
 
 #let ax-row(n, d) = (table.cell(text(font: sans, weight: 700, size: 22pt, fill: mint.d, n)), text(size: 25pt, d))
-#let colR = [
-  #card("07", "The Gluon-to-Z3 library", mint)[
+#let card7(x) = [
+  #card("7", "The Gluon-to-Z3 library", mint)[
     Hardware actions become *events* in a bounded graph ordered by _happens-before_ and _program order_. *Axioms* encode ordering rules; each *theorem* asks Z3 to satisfy the *negation* of a property: *UNSAT* proves it for every schedule, *SAT* gives a counterexample.
     #v(10pt)
     #fig(table(columns: (1.15fr, 2.5fr), rows: 38pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 3pt),
@@ -306,8 +312,9 @@ with up to 1 in-flight iteration
       ..ax-row("Bank-conflict freedom", "same-warp threads hit distinct banks"),
       ..ax-row("Global coalescing", "warp accesses fit one aligned cache line"),
       table.hline(stroke: 2pt + mint.s),
-    ))[*Event vocabulary:* Space, Proxy, EventType, MBarrier.]
+    ))
+    #v(x)
   ]
 ]
 
-#block(height: 1fr, grid(columns: (1fr, 1fr), column-gutter: 40pt, colL, colR))
+#pair(card6, card7, gutter: 40pt)
