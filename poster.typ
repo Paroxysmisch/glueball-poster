@@ -13,15 +13,16 @@
 #let rose = (f: rgb("#f5e0dc"), s: rgb("#d9a096"), d: rgb("#a8483c"))  // retry / failure
 #let grey = (f: rgb("#f0eef1"), s: rgb("#b9b6c0"), d: rgb("#5b586a"))
 
-#let serif = "New Computer Modern"
-#let display = "New Computer Modern"
+#let serif = "Libertinus Serif"
+#let body-font = "New Computer Modern"
+#let display = "Libertinus Serif"
 #let sans = "Libre Franklin"
 #let mono = "Source Code Pro"
 
 // ───────────── page & text ─────────────
 #set page(width: 841mm, height: 1189mm, fill: paper,
   margin: (x: 24mm, top: 20mm, bottom: 20mm))
-#set text(font: serif, size: 29pt, fill: ink, lang: "en", hyphenate: false, weight: 400)
+#set text(font: body-font, size: 30pt, fill: ink, lang: "en", hyphenate: false, weight: 400)
 #set par(justify: false, leading: 0.72em, spacing: 1.1em)
 #set list(indent: 0pt, body-indent: 0.55em, spacing: 0.85em, marker: box(baseline: 0.0em, polygon.regular(size: 0.42em, vertices: 4, fill: sky.s, stroke: none)))
 #set enum(indent: 0pt, body-indent: 0.55em, spacing: 0.85em)
@@ -138,7 +139,7 @@
         text(size: 29pt, weight: if top { 700 } else { 400 }, fill: if m.median >= 1 { mint.d } else { rose.d }, m.label + "×")))
     }
   }
-  table(columns: (3.1fr, 0.95fr, 1.1fr, 1.1fr, 1.1fr, 1fr), rows: ROW, align: center + horizon, stroke: none, inset: (x: 10pt, y: 6pt),
+  table(columns: (3.1fr, 0.8fr, 1.1fr, 1.1fr, 1.3fr, 1fr), rows: ROW, align: center + horizon, stroke: none, inset: (x: 10pt, y: 6pt),
     fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#fbf9f3") },
     th(sun, align: left)[Workload], th(sun)[Type], ..agents.map(n => th(sun, n)),
     table.hline(stroke: 2pt + sun.s),
