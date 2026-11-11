@@ -1,7 +1,6 @@
 // Glueball — A0 portrait research poster (Typst)
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
 #import "@preview/showybox:2.0.4": showybox
-#import "@preview/lilaq:0.5.0" as lq
 
 // ───────────── palette: soft pastels + deep ink ─────────────
 #let ink = rgb("#2b2d42")
@@ -108,37 +107,30 @@
   )
 }
 
-// native violin plot (data recovered from the paper's figure by scripts/extract_speedups.py)
+// median speedups, recovered from the paper's figure by scripts/extract_speedups.py
 #let speed-data = json("figures/speedups.json")
 #let lane-names = ("V4 Pro", "V4 Flash", "Muse Spark", "GPT 5.6 Sol")
-#let v-good = rgb("#4f9d80")
-#let v-bad = rgb("#c9776b")
-#let v-tick = (0.2, 0.2, 0.05, none, 0.25, none)
-#let speed-panel(k, e) = {
-  let items = (lq.plot((1, 1), (0.4, 4.6), stroke: (paint: luma(130), thickness: 1.6pt, dash: "dashed"), mark: none),)
-  for (i, m) in e.models.enumerate() {
-    let lane = 4 - i
-    let c = if m.good { v-good } else { v-bad }
-    let o = m.outline
-    let xs = (o.first().at(0),) + o.map(p => p.at(0)) + (o.last().at(0),)
-    let w = (0,) + o.map(p => p.at(1) * 0.38) + (0,)
-    items.push(lq.fill-between(xs, w.map(v => lane - v), y2: w.map(v => lane + v),
-      fill: c.transparentize(80%), stroke: 1.6pt + c.transparentize(35%)))
-    items.push(lq.scatter(m.vals, m.off.map(v => lane + v * 0.38), size: 8pt, color: c.transparentize(25%), stroke: none))
-    items.push(lq.scatter((m.median,), (lane,), size: 18pt, color: white, stroke: 3pt + c))
-    items.push(lq.place(m.median, lane + 0.28, text(size: 21pt, weight: 700, fill: c.darken(15%), m.label + "×"), align: bottom))
-  }
-  lq.diagram(width: 470pt, height: 235pt, title: text(font: sans, weight: 700, e.name),
-    xscale: if e.log { "log" } else { "linear" },
-    xaxis: if v-tick.at(k) != none { (tick-distance: v-tick.at(k), subticks: none) } else { (subticks: none) },
-    yaxis: (lim: (0.4, 4.6), ticks: lane-names.enumerate().map(((i, n)) => (4 - i, n)), subticks: none),
-    grid: (stroke: 0.8pt + luma(230)),
-    ..items)
-}
+#let kind = ("model", "model", "model", "kernel", "kernel", "kernel")
 #let fig-speed = {
-  set text(font: sans, size: 24pt)
-  grid(columns: (1fr, 1fr, 1fr), row-gutter: 44pt, align: center,
-    ..speed-data.enumerate().map(((k, e)) => speed-panel(k, e)))
+  let cell-h(b, ..a) = table.cell(fill: sun.f, ..a, text(font: sans, weight: 700, size: 25pt, fill: sun.d, b))
+  let rows = ()
+  for (k, e) in speed-data.enumerate() {
+    let meds = e.models.map(m => m.median)
+    let best = calc.max(..meds)
+    rows.push(table.cell(align: left + horizon, text(size: 33pt)[*#e.name* #h(0.4em) #text(font: sans, size: 22pt, fill: muted)[#kind.at(k)]]))
+    for m in e.models {
+      let good = m.median >= 1
+      let top = m.median == best
+      rows.push(table.cell(fill: if top { sun.f.lighten(35%) },
+        text(size: 34pt, weight: if top { 700 } else { 400 }, fill: if good { mint.d } else { rose.d }, m.label + "×")))
+    }
+  }
+  table(columns: (2.6fr, 1fr, 1fr, 1fr, 1fr), align: center + horizon, stroke: none, inset: (x: 14pt, y: 17pt),
+    fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#fbf9f3") },
+    cell-h(align: left)[Workload], ..lane-names.map(n => cell-h(n)),
+    table.hline(stroke: 2pt + sun.s),
+    ..rows,
+    table.hline(stroke: 2pt + sun.s))
 }
 
 #card("System: optimize, verify, benchmark", sky)[
@@ -150,13 +142,14 @@
 ]
 #v(20pt)
 #card("Whole-model speedups over Triton", sun)[
-  #fig(fig-speed)[*Figure 3.* Best-round speedup per input shape (GB10, 6 rounds). Dots are shapes, circles medians (green ≥ parity); dashed line = Triton. Cross-Entropy and Neighborhood Attention use log axes.]
-  #v(10pt)
-  #grid(columns: (1fr, 1fr, 1fr, 1fr), column-gutter: 36pt,
-    [*GPT-OSS:* V4 Pro folds the QKV transpose into the TMA descriptor and indexes GQA heads in-kernel.],
-    [*Qwen-3.5 MoE:* *TMA gather* moves routed token rows; contiguous TMA moves expert weights.],
-    [*Mamba-2:* Triton's pipeline is already strong; extra buffering cost more than it overlapped.],
-    [*Neighborhood attention:* an algorithmic win, $O(L^2 D) arrow O(L W D)$, about *25×* median.])
+  #grid(columns: (1.12fr, 1fr), column-gutter: 56pt, align: horizon,
+    fig(fig-speed)[*Table 1.* Median best-round speedup over the Triton baseline across input shapes (GB10, 6 rounds). Green: at or above parity; shaded: best agent per workload.],
+    [
+      - *GPT-OSS:* DeepSeek V4 Pro folds the QKV transpose into the TMA descriptor and indexes GQA heads in-kernel, cutting memory traffic.
+      - *Qwen-3.5 MoE:* *TMA gather* moves routed token rows; contiguous TMA moves expert weights.
+      - *Mamba-2:* Triton's pipeline is already strong; extra buffering cost more than it overlapped.
+      - *Neighborhood attention:* an algorithmic win, $O(L^2 D) arrow O(L W D)$, about *25×* median.
+    ])
 ]
 #v(20pt)
 
@@ -179,15 +172,24 @@
   #v(20pt, weak: false)#v(1fr)
   #card("Formal tools in the loop", mint)[
     Equivalence is undecidable and GPU state spaces explode, so verification is *hybrid*.
-    - *Symbolic execution* maps IR ops to Z3 terms over symbolic inputs.
+    - *Symbolic execution* maps IR ops to Z3 terms over symbolic inputs; softmax is recovered as $exp(x - m) / sum exp(x - m)$.
     - *Opaque operations* (reductions, memory, sync) split a kernel into *symbolic regions*: Z3 inside, the LLM across.
     - *Gluon-to-Z3 library* models async copies, barriers and shared memory for race and pipeline checks.
-
-    *Takeaway:* formal tools find more bugs with fewer false positives. *Next:* multi-GPU kernels, constraint-guided schedule search.
+  ]
+  #v(20pt, weak: false)#v(1fr)
+  #card("Conclusions", lav)[
+    Formal tools in the loop *find more bugs with fewer false positives*, while agents gain from data movement and algorithmic changes. *Next:* multi-GPU kernels and constraint-guided schedule search.
   ]
 ]
 
 #let colR = [
+  #card("Hardware-aware optimization", sky)[
+    - *Profile:* Nsight Compute and source probes rank kernels by run-time share.
+    - *Propose:* one agent merges reports and history into a ranked multi-kernel portfolio.
+    - *Implement:* edits pass compilation, numerics (FpSan) and formal checks.
+    - *Benchmark:* hidden, re-randomized inputs; only verified proposals commit.
+  ]
+  #v(20pt, weak: false)#v(1fr)
   #card("Verification finds more bugs", mint)[
     #fig(
       table(columns: (2.1fr, 1.25fr, 1fr, 1fr, 1fr, 1.25fr, 1fr, 1fr, 1fr), align: (left + horizon, center + horizon),
@@ -202,7 +204,7 @@
         [Muse Spark], [22], pos[+2], [0], [0], [9], [0], [3], pos[−3],
         [GPT 5.6 Sol], [21], pos[+2], [0], [0], [9], pos[+1], [1], pos[−1],
         table.hline(stroke: 2pt + mint.s),
-      ))[*Figure 4.* Generic: 50 Liger cases (24 bugs); sync: 22 Gluon kernels (10 bugs). Δ = gain from adding Glueball; Z3 *cuts sync false positives sharply*.]
+      ))[*Figure 4.* Δ = gain from adding Glueball; Z3 *cuts sync false positives sharply*.]
   ]
   #v(20pt, weak: false)#v(1fr)
   #card("Case study: a pipelining bug", rose)[
