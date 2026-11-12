@@ -125,7 +125,7 @@
 #let agents = ("DeepSeek V4 Pro", "DeepSeek V4 Flash", "Meta Muse Spark 1.3", "GPT 5.6 Sol")
 #let kind = ("Model", "Model", "Model", "Kernel", "Kernel", "Kernel")
 #let th(pal, b, ..a) = table.cell(fill: pal.f, ..a, text(font: sans, weight: 700, size: 21pt, fill: pal.d, par(leading: 0.55em, b)))
-#let ROW = 62pt
+#let ROW = 56pt
 
 #let fig-speed = {
   let rows = ()
@@ -307,10 +307,11 @@ witness: [iter_p = 2, lag = 2]
 #pair(card6, card7, gutter: 40pt)
 #v(14pt)
 #card("8", "Future directions", lav)[
-  #v(8pt)
-  #grid(columns: (1fr, 1fr), column-gutter: 56pt,
+  #v(10pt)
+  #grid(columns: (1fr, 1fr, 1fr), column-gutter: 48pt,
     [*Multi-GPU and heterogeneous targets.* Extend generation and verification to distributed kernels (ParallelKernelBench) and other accelerators, adding proof obligations for collective ordering, cross-rank synchronization and distributed races and deadlocks.],
     [*Constraint- and statistics-guided search.* Prune software-pipelining schedule families with resource and safety checks before generating code, and use past profiling and verification feedback to cut costly LLM iterations.],
+    [*Verification across the compilation stack.* Integrate further formal tools, such as a formal PTX model, so that kernels are checked at several levels (Gluon, TTGIR, PTX) and not only at the Triton IR and Gluon-library level.],
   )
-  #v(14pt)
+  #v(22pt)
 ]
