@@ -125,7 +125,7 @@
 #let agents = ("DeepSeek V4 Pro", "DeepSeek V4 Flash", "Meta Muse Spark 1.3", "GPT 5.6 Sol")
 #let kind = ("Model", "Model", "Model", "Kernel", "Kernel", "Kernel")
 #let th(pal, b, ..a) = table.cell(fill: pal.f, ..a, text(font: sans, weight: 700, size: 21pt, fill: pal.d, par(leading: 0.55em, b)))
-#let ROW = 52pt
+#let ROW = 62pt
 
 #let fig-speed = {
   let rows = ()
@@ -162,22 +162,22 @@
 #card("1", "System: optimize, verify, benchmark", sky)[
   #fig(fit(fig-arch))
 ]
-#v(10pt)
+#v(14pt)
 #card("2", "Correctness pipeline: LLM reasoning with Z3 evidence", mint)[
   #fig(fit(fig-corr))
 ]
-#v(10pt)
+#v(14pt)
 #pair(
   x => card("3", "Whole-model speedups over Triton", sun)[#fig(fig-speed)#v(x)],
   x => card("4", "Verification finds more bugs", mint)[#fig(fig-bugs)#v(x)],
 )
-#v(10pt)
+#v(14pt)
 
 // ───────── case study (full width) ─────────
 #let code(body, h: auto) = block(fill: rgb("#f6f4f9"), stroke: 2pt + grey.s, radius: 6pt,
   inset: 20pt, width: 100%, height: h,
-  text(font: mono, size: 23pt, body))
-#let lab(pal, t) = block(below: 12pt, text(font: sans, weight: 700, size: 24pt, fill: pal.d, t))
+  text(font: mono, size: 22pt, body))
+#let lab(pal, t) = block(below: 16pt, text(font: sans, weight: 700, size: 24pt, fill: pal.d, t))
 
 #let case-cols(hm) = {
   let bh = if hm == none { auto } else { hm }
@@ -194,9 +194,7 @@ perform_add(
     a_smem[read_idx % num_buffers],
     b_smem[read_idx % num_buffers],
 )
-```]
-   #v(10pt)
-   #text(size: 27pt)[Waiting for too few copies lets the consumer read a buffer still being filled. The LLM encodes this as events (b); Z3 names the racing store and load (c) and a colliding pipeline iteration (d).]],
+```]],
   block(height: bh)[#lab(rose)[(b) Symbolic model: the relevant part]
    #code(h: fx)[```python
 r0, w0 = ctx.map_async_copy_global_to_shared(
@@ -214,7 +212,7 @@ ctx.program_order(wait.id, load.id)
 safe, model = ctx.check_async_race_freedom()
 ```]],
   block(height: bh)[#lab(rose)[(c) Z3 verdict: the race]
-   #code[```
+   #code(h: fx)[```
 wait_group(2):
 DATA RACE detected:
   copy0.smem_write
@@ -224,9 +222,8 @@ DATA RACE detected:
   read buffer0
     LOAD SHARED@0x100
     proxy=GENERIC
-```]
-   #v(10pt)
-   #lab(rose)[(d) Pipeline-level witness]
+```]],
+  block(height: bh)[#lab(rose)[(d) Pipeline-level witness]
    #code(h: fx)[```
 check_pipeline_stage_isolation(
     num_stages=2, max_inflight=2)
@@ -240,14 +237,14 @@ witness: [iter_p = 2, lag = 2]
 
 #card("5", "Case study: Z3 exposes a pipelining bug", rose)[
   #layout(size => {
-    let cw = (size.width - 52pt) / 3.1
-    let widths = (cw, cw * 1.2, cw * 0.9)
-    let hs = case-cols(none).zip(widths).map(((c, w)) => measure(width: w, c).height)
+    let fr = (515, 634, 436, 476)
+    let cw = (size.width - 3 * 26pt) / fr.sum()
+    let hs = case-cols(none).zip(fr).map(((c, f)) => measure(width: f * cw, c).height)
     let hm = calc.max(..hs)
-    grid(columns: (1fr, 1.2fr, 0.9fr), column-gutter: 26pt, ..case-cols(hm))
+    grid(columns: fr.map(f => f * 1fr), column-gutter: 26pt, ..case-cols(hm))
   })
 ]
-#v(10pt)
+#v(14pt)
 
 // ═════════════ TWO COLUMNS: the two halves of the correctness system ═════════════
 #let tag-chip(pal, t) = box(fill: pal.f, stroke: 1.5pt + pal.s, radius: 5pt, inset: (x: 10pt, y: 3pt),
@@ -289,7 +286,7 @@ witness: [iter_p = 2, lag = 2]
 #let card7(x) = [
   #card("7", "The Gluon-to-Z3 library", mint)[
     Hardware actions become *events* in a bounded graph ordered by _happens-before_ and _program order_. *Axioms* encode ordering rules; each *theorem* asks Z3 to satisfy the *negation* of a property: *UNSAT* proves it for every schedule, *SAT* gives a counterexample.
-    #v(10pt)
+    #v(14pt)
     #fig(table(columns: (1.15fr, 2.5fr), rows: 38pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 3pt),
       fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#f4faf7") },
       th(mint, colspan: 2, align: left)[Axioms: hardware ordering rules],
@@ -308,7 +305,7 @@ witness: [iter_p = 2, lag = 2]
 ]
 
 #pair(card6, card7, gutter: 40pt)
-#v(10pt)
+#v(14pt)
 #card("8", "Future directions", lav)[
   #grid(columns: (1fr, 1fr), column-gutter: 56pt,
     [*Multi-GPU and heterogeneous targets.* Extend generation and verification to distributed kernels (ParallelKernelBench) and other accelerators, adding proof obligations for collective ordering, cross-rank synchronization and distributed races and deadlocks.],
