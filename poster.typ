@@ -307,8 +307,10 @@ witness: [iter_p = 2, lag = 2]
 #pair(card6, card7, gutter: 40pt)
 #v(14pt)
 #card("8", "Future directions", lav)[
+  #v(8pt)
   #grid(columns: (1fr, 1fr), column-gutter: 56pt,
     [*Multi-GPU and heterogeneous targets.* Extend generation and verification to distributed kernels (ParallelKernelBench) and other accelerators, adding proof obligations for collective ordering, cross-rank synchronization and distributed races and deadlocks.],
     [*Constraint- and statistics-guided search.* Prune software-pipelining schedule families with resource and safety checks before generating code, and use past profiling and verification feedback to cut costly LLM iterations.],
   )
+  #v(14pt)
 ]
