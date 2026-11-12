@@ -21,7 +21,7 @@
 
 // ───────────── page & text ─────────────
 #set page(width: 841mm, height: 1189mm, fill: paper,
-  margin: (x: 24mm, top: 20mm, bottom: 20mm))
+  margin: (x: 24mm, top: 18mm, bottom: 16mm))
 #set text(font: body-font, size: 30pt, fill: ink, lang: "en", hyphenate: false, weight: 400)
 #set par(justify: false, leading: 0.72em, spacing: 1.1em)
 #set list(indent: 0pt, body-indent: 0.55em, spacing: 0.85em, marker: box(baseline: 0.0em, polygon.regular(size: 0.42em, vertices: 4, fill: sky.s, stroke: none)))
@@ -125,7 +125,7 @@
 #let agents = ("DeepSeek V4 Pro", "DeepSeek V4 Flash", "Meta Muse Spark 1.3", "GPT 5.6 Sol")
 #let kind = ("Model", "Model", "Model", "Kernel", "Kernel", "Kernel")
 #let th(pal, b, ..a) = table.cell(fill: pal.f, ..a, text(font: sans, weight: 700, size: 21pt, fill: pal.d, par(leading: 0.55em, b)))
-#let ROW = 62pt
+#let ROW = 52pt
 
 #let fig-speed = {
   let rows = ()
@@ -162,29 +162,29 @@
 #card("1", "System: optimize, verify, benchmark", sky)[
   #fig(fit(fig-arch))
 ]
-#v(14pt)
+#v(10pt)
 #card("2", "Correctness pipeline: LLM reasoning with Z3 evidence", mint)[
   #fig(fit(fig-corr))
 ]
-#v(14pt)
+#v(10pt)
 #pair(
   x => card("3", "Whole-model speedups over Triton", sun)[#fig(fig-speed)#v(x)],
   x => card("4", "Verification finds more bugs", mint)[#fig(fig-bugs)#v(x)],
 )
-#v(14pt)
+#v(10pt)
 
 // ───────── case study (full width) ─────────
 #let code(body, h: auto) = block(fill: rgb("#f6f4f9"), stroke: 2pt + grey.s, radius: 6pt,
   inset: 20pt, width: 100%, height: h,
   text(font: mono, size: 23pt, body))
-#let lab(pal, t) = block(below: 16pt, text(font: sans, weight: 700, size: 24pt, fill: pal.d, t))
+#let lab(pal, t) = block(below: 12pt, text(font: sans, weight: 700, size: 24pt, fill: pal.d, t))
 
 #let case-cols(hm) = {
   let bh = if hm == none { auto } else { hm }
   let fx = if hm == none { auto } else { 1fr }
   (
   block(height: bh)[#lab(rose)[(a) The bug: waits for too few copies]
-   #code[```python
+   #code(h: fx)[```python
 # Correct
 cp.wait_group(num_buffers - 1)
 # Bug
@@ -195,9 +195,26 @@ perform_add(
     b_smem[read_idx % num_buffers],
 )
 ```]
-   #v(18pt)
-   #lab(rose)[(c) Z3 verdict]
-   #code(h: fx)[```
+   #v(10pt)
+   #text(size: 27pt)[Waiting for too few copies lets the consumer read a buffer still being filled. The LLM encodes this as events (b); Z3 names the racing store and load (c) and a colliding pipeline iteration (d).]],
+  block(height: bh)[#lab(rose)[(b) Symbolic model: the relevant part]
+   #code(h: fx)[```python
+r0, w0 = ctx.map_async_copy_global_to_shared(
+    0, src_addr=0x1000, dst_addr=0x100,
+    size=4, label='copy0')
+...
+wait = ctx.map_async_wait_group(
+    0, num_outstanding=wait_arg,
+    label=f'wait({wait_arg})')
+load = ctx.map_load(
+    0, 0x100, Space.SHARED,
+    size=4, label='read buffer0')
+ctx.program_order(wait.id, load.id)
+
+safe, model = ctx.check_async_race_freedom()
+```]],
+  block(height: bh)[#lab(rose)[(c) Z3 verdict: the race]
+   #code[```
 wait_group(2):
 DATA RACE detected:
   copy0.smem_write
@@ -207,35 +224,9 @@ DATA RACE detected:
   read buffer0
     LOAD SHARED@0x100
     proxy=GENERIC
-wait_group(1):
-RACE-FREE: proven
-```]],
-  block(height: bh)[#lab(rose)[(b) Symbolic model written by the LLM]
-   #code(h: fx)[```python
-def build(num_buffers, wait_arg):
-    ctx = GluonVerificationContext()
-    r0, w0 = ctx.map_async_copy_global_to_shared(
-        0, src_addr=0x1000, dst_addr=0x100,
-        size=4, label='copy0')
-    ctx.map_async_commit_group(0)
-    r1, w1 = ctx.map_async_copy_global_to_shared(
-        0, src_addr=0x2000, dst_addr=0x200,
-        size=4, label='copy1')
-    ctx.map_async_commit_group(0)
-    wait = ctx.map_async_wait_group(
-        0, num_outstanding=wait_arg,
-        label=f'wait({wait_arg})')
-    load = ctx.map_load(
-        0, 0x100, Space.SHARED,
-        size=4, label='read buffer0')
-    ctx.program_order(wait.id, load.id)
-    return ctx
-
-for wait_arg in [2, 1]:
-    safe, model = build(
-        2, wait_arg).check_async_race_freedom()
-```]],
-  block(height: bh)[#lab(rose)[(d) Pipeline-level witness]
+```]
+   #v(10pt)
+   #lab(rose)[(d) Pipeline-level witness]
    #code(h: fx)[```
 check_pipeline_stage_isolation(
     num_stages=2, max_inflight=2)
@@ -243,18 +234,7 @@ check_pipeline_stage_isolation(
 PIPELINE COLLISION:
 producer and consumer share a slot
 witness: [iter_p = 2, lag = 2]
--> (False, [iter_p = 2, lag = 2])
-
-max_inflight=1:
-
-STAGE-ISOLATED:
-num_stages=2 never aliases
-with up to 1 in-flight iteration
--> (True, None)
-```]
-   #v(14pt)
-   #text(size: 27pt)[Waiting for too few async copies lets the consumer read a buffer that is still being filled. The LLM encodes the pipeline (b); Z3 names the racing store and load (c), and a pipeline-level check yields a concrete iteration where producer and consumer share one slot (d).]
-   ],
+```]],
 )
 }
 
@@ -267,7 +247,7 @@ with up to 1 in-flight iteration
     grid(columns: (1fr, 1.2fr, 0.9fr), column-gutter: 26pt, ..case-cols(hm))
   })
 ]
-#v(14pt)
+#v(10pt)
 
 // ═════════════ TWO COLUMNS: the two halves of the correctness system ═════════════
 #let tag-chip(pal, t) = box(fill: pal.f, stroke: 1.5pt + pal.s, radius: 5pt, inset: (x: 10pt, y: 3pt),
@@ -297,11 +277,11 @@ with up to 1 in-flight iteration
 
 #let card6(x) = [
   #card("6", "Symbolic execution: a Z3 model of TTIR", mint)[
-    Each MLIR op becomes a Z3 term over one representative scalar per tensor. Ops the model cannot capture become *fresh opaque symbols* that split the kernel into *symbolic regions*; Z3 reasons inside, the LLM across.
+    Each MLIR op becomes a Z3 term over one scalar per tensor; ops the model cannot capture become *fresh opaque symbols* that split the kernel into *symbolic regions* (Z3 inside, the LLM across).
     #v(8pt)
     #fig(ttir-map)
     #v(8pt)
-    Chasing the stored value gives a single closed form, #text(font: mono, size: 22pt)[exp(load_row − maxnumf_row_minus_max) / addf_denominator], while the loads and reductions stay opaque.
+    The stored value reduces to #text(font: mono, size: 22pt)[exp(load_row − maxnumf_row_minus_max) / addf_denominator], with loads and reductions opaque.#v(x)
   ]
 ]
 
@@ -328,3 +308,10 @@ with up to 1 in-flight iteration
 ]
 
 #pair(card6, card7, gutter: 40pt)
+#v(10pt)
+#card("8", "Future directions", lav)[
+  #grid(columns: (1fr, 1fr), column-gutter: 56pt,
+    [*Multi-GPU and heterogeneous targets.* Extend generation and verification to distributed kernels (ParallelKernelBench) and other accelerators, adding proof obligations for collective ordering, cross-rank synchronization and distributed races and deadlocks.],
+    [*Constraint- and statistics-guided search.* Prune software-pipelining schedule families with resource and safety checks before generating code, and use past profiling and verification feedback to cut costly LLM iterations.],
+  )
+]
