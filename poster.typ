@@ -180,7 +180,7 @@
 #let arm-names = ("Both tools", "Z3 library only", "Symbolic exec. only", "Neither (raw model)")
 #let arm-col = (mint, sky, lav, rose)
 #let abl-bar(val, mx, pal) = stack(dir: ltr, spacing: 8pt,
-  box(width: val * 16pt, height: 22pt, radius: 3pt, fill: pal.s),
+  box(width: val * 10pt, height: 22pt, radius: 3pt, fill: pal.s),
   text(size: 24pt, weight: 700, fill: pal.d)[#val M])
 #let fig-abl = table(columns: (2.4fr, 1fr, 1fr, 1fr, 1fr, 1fr), rows: (36pt, 66pt, ROW), align: (left + horizon, center + horizon),
   stroke: none, inset: (x: 8pt, y: 6pt), fill: (_, y) => if y > 1 and calc.even(y) { rgb("#f4faf7") },
@@ -311,23 +311,23 @@ witness: [iter_p = 2, lag = 2]
   ]
 ]
 
-#let ax-row(n, d) = (table.cell(text(font: sans, weight: 700, size: 22pt, fill: mint.d, n)), text(size: 25pt, d))
+#let ax-row(n, d, pal: mint) = (table.cell(text(font: sans, weight: 700, size: 22pt, fill: pal.d, n)), text(size: 25pt, d))
 #let card7(x) = [
   #card("8", "The Gluon-to-Z3 library", mint)[
     Hardware actions become *events* ordered by _happens-before_. Each *theorem* asks Z3 to satisfy the *negation* of a property: *UNSAT* proves it, *SAT* gives a counterexample.
     #v(6pt)
     #fig(table(columns: (1.15fr, 2.5fr), rows: 38pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 3pt),
-      fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#f4faf7") },
+      fill: (_, y) => if y > 6 and calc.odd(y) { lav.f.lighten(55%) } else if y > 0 and y < 6 and calc.odd(y) { rgb("#f4faf7") },
       th(mint, colspan: 2, align: left)[Axioms: hardware ordering rules],
       ..ax-row("Sequential consistency", "events form an acyclic timeline"),
       ..ax-row("CTA barrier", "gl.barrier(): before ⇒ after, all threads"),
       ..ax-row("Async-proxy fence", "orders generic writes before TMA / MMA reads"),
       ..ax-row("Mbarrier sync", "arrival and byte accounting; short ⇒ deadlock"),
       ..ax-row("Manual ordering", "assert or deny a happens-before edge"),
-      th(rose, colspan: 2, align: left)[Theorems: safety properties],
-      ..ax-row("Async race freedom", "no unordered access pair with a write"),
-      ..ax-row("Bank-conflict freedom", "same-warp threads hit distinct banks"),
-      ..ax-row("Global coalescing", "warp accesses fit one aligned cache line"),
+      th(lav, colspan: 2, align: left)[Theorems: safety properties],
+      ..ax-row("Async race freedom", "no unordered access pair with a write", pal: lav),
+      ..ax-row("Bank-conflict freedom", "same-warp threads hit distinct banks", pal: lav),
+      ..ax-row("Global coalescing", "warp accesses fit one aligned cache line", pal: lav),
     ))
     #v(x)
   ]
