@@ -35,7 +35,7 @@
   frame: (
     title-color: pal.f.lighten(45%), border-color: pal.s.lighten(35%), body-color: white,
     thickness: 1.6pt, radius: 10pt,
-    inset: (x: 44pt, y: 13pt), body-inset: (x: 56pt, y: 14pt),
+    inset: (x: 44pt, y: 14pt), body-inset: (x: 56pt, y: 16pt),
   ),
   shadow: (color: rgb("#2b2d42").transparentize(94%), offset: (x: 0pt, y: 4pt)),
   title-style: (boxed-style: none),
@@ -72,7 +72,7 @@
     align(right, text(font: sans, size: 30pt, fill: muted)[Anonymous authors]),
   )
 ]
-#v(30pt)
+#v(16pt)
 
 // ═════════════ FULL-WIDTH FIGURES ═════════════
 #let fig-arch = {
@@ -144,7 +144,7 @@
         text(size: 27pt, weight: if top { 700 } else { 400 }, fill: if m.median >= 1 { mint.d } else { rose.d }, m.label + "×")))
     }
   }
-  table(columns: (3.1fr, 0.7fr, 1.15fr, 1.05fr, 1.05fr, 1.45fr, 0.95fr), rows: ROW, align: center + horizon, stroke: none, inset: (x: 8pt, y: 6pt),
+  table(columns: (3.1fr, 0.7fr, 1.15fr, 1.05fr, 1.05fr, 1.45fr, 0.95fr), rows: (66pt, ROW), align: center + horizon, stroke: none, inset: (x: 8pt, y: 6pt),
     fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#fbf9f3") },
     th(sun, align: left)[Workload], th(sun)[Type], table.cell(fill: grey.f, th(grey)[Astra + CODEX]), ..agents.map(n => th(sun, n)),
     table.hline(stroke: 2pt + sun.s),
@@ -152,7 +152,7 @@
 }
 
 #let pos(b) = text(fill: mint.d, weight: 700, b)
-#let fig-bugs = table(columns: (3.3fr, 1.1fr, 1fr, 1fr, 1fr, 1.1fr, 1fr, 1fr, 1fr), rows: ROW,
+#let fig-bugs = table(columns: (3.3fr, 1.1fr, 1fr, 1fr, 1fr, 1.1fr, 1fr, 1fr, 1fr), rows: (36pt, 46pt, ROW),
   align: (left + horizon, center + horizon), stroke: none, inset: (x: 8pt, y: 6pt),
   fill: (_, y) => if y > 1 and calc.even(y) { rgb("#f4faf7") },
   table.cell(rowspan: 2, th(mint, align: left)[Model]),
@@ -167,22 +167,22 @@
 #card("1", "System: optimize, verify, benchmark", sky)[
   #fig(fit(fig-arch))
 ]
-#v(6pt)
+#v(10pt)
 #card("2", "Correctness pipeline: LLM reasoning with Z3 evidence", mint)[
   #fig(fit(fig-corr))
 ]
-#v(6pt)
+#v(10pt)
 #pair(
   x => card("3", "Whole-model speedups over Triton", sun)[#fig(fig-speed)#v(x)],
   x => card("4", "Verification finds more bugs", mint)[#fig(fig-bugs)#v(x)],
 )
-#v(6pt)
+#v(10pt)
 #let arm-names = ("Both tools", "Z3 library only", "Symbolic exec. only", "Neither (raw model)")
 #let arm-col = (mint, sky, lav, rose)
 #let abl-bar(val, mx, pal) = stack(dir: ltr, spacing: 8pt,
   box(width: val * 16pt, height: 22pt, radius: 3pt, fill: pal.s),
   text(size: 24pt, weight: 700, fill: pal.d)[#val M])
-#let fig-abl = table(columns: (2.4fr, 1fr, 1fr, 1fr, 1fr, 1fr), rows: ROW, align: (left + horizon, center + horizon),
+#let fig-abl = table(columns: (2.4fr, 1fr, 1fr, 1fr, 1fr, 1fr), rows: (36pt, 66pt, ROW), align: (left + horizon, center + horizon),
   stroke: none, inset: (x: 8pt, y: 6pt), fill: (_, y) => if y > 1 and calc.even(y) { rgb("#f4faf7") },
   table.cell(rowspan: 2, th(mint, align: left)[Test arm]),
   table.cell(colspan: 2, th(mint)[Bug detection]), table.cell(colspan: 3, th(mint)[Idiomatic, bug-free code]),
@@ -193,15 +193,14 @@
   text(size: 25pt)[Symbolic exec. only], [27], [1.40 M], pos[0], [4.29 M], [50.9],
   text(size: 25pt)[Neither (raw model)], [27], [1.52 M], text(fill: rose.d, weight: 700)[7], [4.44 M], [71.2])
 #let defects = (("cpasync_barrier", (0.42, 0.62, 1.47, 1.75)), ("arrive_before_fence", (1.24, 0.90, 3.19, 3.69)), ("missing_fence", (1.77, 2.05, 2.68, 3.33)))
-#let fig-defects = table(columns: (2.3fr, 1fr, 1fr, 1fr, 1fr), rows: ROW, align: (left + horizon, left + horizon),
+#let fig-defects = table(columns: (2.3fr, 1fr, 1fr, 1fr, 1fr), rows: (40pt, ROW), align: (left + horizon, left + horizon),
   stroke: none, inset: (x: 8pt, y: 6pt), fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#f4faf7") },
   th(mint, align: left)[Tokens per defect], ..arm-names.zip(arm-col).map(((n, p)) => th(p, align: left)[#n.split(" ").first()]),
   table.hline(stroke: 2pt + mint.s),
   ..defects.map(((d, v)) => (text(font: mono, size: 21pt)[#d], ..v.zip(arm-col).map(((x, p)) => abl-bar(x, 3.75, p)))).flatten())
 #card("5", "Ablation: what do the specialized tools buy?", sky)[
   #grid(columns: (1.2fr, 1fr), column-gutter: 40pt, align: horizon, fig(fig-abl), fig(fig-defects))
-  #v(6pt)
-  The raw model already detects bugs well. The tools *cut token use* (39% on average, up to 76% per defect), remove all *7 false positives* and save a third of the tool calls: with the Z3 library an agent models the async ordering and gets a SAT / RACE-FREE pair in a few calls. #text(font: sans, size: 22pt, fill: muted)[(DeepSeek V4 Pro, tools in isolation.)]
+
 ]
 
 // ───────── case study (full width) ─────────
@@ -282,7 +281,7 @@ witness: [iter_p = 2, lag = 2]
   text(font: sans, size: 20pt, weight: 600, fill: pal.d, t))
 #let mono-t(t) = text(font: mono, size: 22pt, t)
 
-#let ttir-map = table(columns: (1.45fr, 2.1fr, 1.1fr), rows: 40pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 4pt),
+#let ttir-map = table(columns: (1.45fr, 2.1fr, 1.1fr), rows: 44pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 4pt),
   fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#f4faf7") },
   th(mint)[TTIR op], th(mint)[Z3 term], th(mint)[Kind],
   table.hline(stroke: 2pt + mint.s),
@@ -305,20 +304,19 @@ witness: [iter_p = 2, lag = 2]
 
 #let card6(x) = [
   #card("7", "Symbolic execution: a Z3 model of TTIR", mint)[
-    Each MLIR op becomes a Z3 term over one scalar per tensor; ops the model cannot capture become *fresh opaque symbols* that split the kernel into *symbolic regions* (Z3 inside, the LLM across).
+    Each MLIR op becomes a Z3 term; ops the model cannot capture become *fresh opaque symbols* that split the kernel into *symbolic regions*.
     #v(6pt)
     #fig(ttir-map)
-    #v(6pt)
-    The stored value reduces to #text(font: mono, size: 22pt)[exp(load_row − maxnumf_row_minus_max) / addf_denominator], with loads and reductions opaque.#v(x)
+    #v(x)
   ]
 ]
 
 #let ax-row(n, d) = (table.cell(text(font: sans, weight: 700, size: 22pt, fill: mint.d, n)), text(size: 25pt, d))
 #let card7(x) = [
   #card("8", "The Gluon-to-Z3 library", mint)[
-    Hardware actions become *events* ordered by _happens-before_ and _program order_. *Axioms* encode ordering rules; each *theorem* asks Z3 to satisfy the *negation* of a property: *UNSAT* proves it for every schedule, *SAT* gives a counterexample.
+    Hardware actions become *events* ordered by _happens-before_. Each *theorem* asks Z3 to satisfy the *negation* of a property: *UNSAT* proves it, *SAT* gives a counterexample.
     #v(6pt)
-    #fig(table(columns: (1.15fr, 2.5fr), rows: 33pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 3pt),
+    #fig(table(columns: (1.15fr, 2.5fr), rows: 38pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 3pt),
       fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#f4faf7") },
       th(mint, colspan: 2, align: left)[Axioms: hardware ordering rules],
       ..ax-row("Sequential consistency", "events form an acyclic timeline"),
@@ -336,7 +334,7 @@ witness: [iter_p = 2, lag = 2]
 ]
 
 #pair(card6, card7, gutter: 40pt)
-#v(6pt)
+#v(10pt)
 #card("9", "Future directions", lav)[
   #grid(columns: (1fr, 1fr, 1fr), column-gutter: 48pt,
     [*Multi-GPU and heterogeneous targets.* Extend generation and verification to distributed kernels (ParallelKernelBench) and other accelerators, with proof obligations for collective ordering and distributed races.],
