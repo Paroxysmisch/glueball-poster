@@ -22,7 +22,7 @@
 // ───────────── page & text ─────────────
 #set page(width: 841mm, height: 1189mm, fill: paper,
   margin: (x: 24mm, top: 18mm, bottom: 16mm))
-#set text(font: body-font, size: 30pt, fill: ink, lang: "en", hyphenate: false, weight: 400)
+#set text(font: body-font, size: 29pt, fill: ink, lang: "en", hyphenate: false, weight: 400)
 #set par(justify: false, leading: 0.72em, spacing: 1.1em)
 #set list(indent: 0pt, body-indent: 0.55em, spacing: 0.85em, marker: box(baseline: 0.0em, polygon.regular(size: 0.42em, vertices: 4, fill: sky.s, stroke: none)))
 #set enum(indent: 0pt, body-indent: 0.55em, spacing: 0.85em)
@@ -35,7 +35,7 @@
   frame: (
     title-color: pal.f.lighten(45%), border-color: pal.s.lighten(35%), body-color: white,
     thickness: 1.6pt, radius: 10pt,
-    inset: (x: 44pt, y: 16pt), body-inset: (x: 56pt, y: 22pt),
+    inset: (x: 44pt, y: 13pt), body-inset: (x: 56pt, y: 14pt),
   ),
   shadow: (color: rgb("#2b2d42").transparentize(94%), offset: (x: 0pt, y: 4pt)),
   title-style: (boxed-style: none),
@@ -102,7 +102,7 @@
   let HI = 60pt
   let HM = 88pt
   diagram(
-    node-inset: 12pt, spacing: (100pt, 16pt), edge-stroke: 2.8pt + ink.lighten(30%), mark-scale: 85%,
+    node-inset: 12pt, spacing: (100pt, 12pt), edge-stroke: 2.8pt + ink.lighten(30%), mark-scale: 85%,
     nd(grey, (0, 0), <rt>, [Reference Triton], w: 340pt, h: HI),
     nd(grey, (0, 1), <pt>, [PyTorch reference], w: 340pt, h: HI),
     nd(sun, (0, 2), <pg>, [Previous Gluon], w: 340pt, h: HI),
@@ -124,24 +124,29 @@
 #let speed-data = json("figures/speedups.json")
 #let agents = ("DeepSeek V4 Pro", "DeepSeek V4 Flash", "Meta Muse Spark 1.3", "GPT 5.6 Sol")
 #let kind = ("Model", "Model", "Model", "Kernel", "Kernel", "Kernel")
+#let astra = ("1.13", "0.99", "1.00", "1.02", "1.10", "4.69")   // GPT 6 Astra + CODEX baseline
 #let th(pal, b, ..a) = table.cell(fill: pal.f, ..a, text(font: sans, weight: 700, size: 21pt, fill: pal.d, par(leading: 0.55em, b)))
-#let ROW = 56pt
+#let ROW = 40pt
 
 #let fig-speed = {
   let rows = ()
   for (k, e) in speed-data.enumerate() {
-    let best = calc.max(..e.models.map(m => m.median))
-    rows.push(table.cell(align: left + horizon, text(size: 26pt, weight: 700, e.name)))
+    let vals = e.models.map(m => m.median)
+    let base = float(astra.at(k))
+    let best = calc.max(..vals, base)
+    rows.push(table.cell(align: left + horizon, text(size: 24pt, weight: 700, e.name)))
     rows.push(table.cell(text(font: sans, size: 21pt, fill: muted, kind.at(k))))
+    rows.push(table.cell(fill: if base == best { sun.f.lighten(35%) } else { grey.f },
+      text(size: 27pt, weight: if base == best { 700 } else { 400 }, fill: if base >= 1 { mint.d } else { rose.d }, astra.at(k) + "×")))
     for m in e.models {
       let top = m.median == best
       rows.push(table.cell(fill: if top { sun.f.lighten(35%) },
-        text(size: 29pt, weight: if top { 700 } else { 400 }, fill: if m.median >= 1 { mint.d } else { rose.d }, m.label + "×")))
+        text(size: 27pt, weight: if top { 700 } else { 400 }, fill: if m.median >= 1 { mint.d } else { rose.d }, m.label + "×")))
     }
   }
-  table(columns: (3.1fr, 0.8fr, 1.1fr, 1.1fr, 1.3fr, 1fr), rows: ROW, align: center + horizon, stroke: none, inset: (x: 10pt, y: 6pt),
+  table(columns: (3.1fr, 0.7fr, 1.15fr, 1.05fr, 1.05fr, 1.45fr, 0.95fr), rows: ROW, align: center + horizon, stroke: none, inset: (x: 8pt, y: 6pt),
     fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#fbf9f3") },
-    th(sun, align: left)[Workload], th(sun)[Type], ..agents.map(n => th(sun, n)),
+    th(sun, align: left)[Workload], th(sun)[Type], table.cell(fill: grey.f, th(grey)[Astra + CODEX]), ..agents.map(n => th(sun, n)),
     table.hline(stroke: 2pt + sun.s),
     ..rows)
 }
@@ -162,16 +167,42 @@
 #card("1", "System: optimize, verify, benchmark", sky)[
   #fig(fit(fig-arch))
 ]
-#v(14pt)
+#v(6pt)
 #card("2", "Correctness pipeline: LLM reasoning with Z3 evidence", mint)[
   #fig(fit(fig-corr))
 ]
-#v(14pt)
+#v(6pt)
 #pair(
   x => card("3", "Whole-model speedups over Triton", sun)[#fig(fig-speed)#v(x)],
   x => card("4", "Verification finds more bugs", mint)[#fig(fig-bugs)#v(x)],
 )
-#v(14pt)
+#v(6pt)
+#let arm-names = ("Both tools", "Z3 library only", "Symbolic exec. only", "Neither (raw model)")
+#let arm-col = (mint, sky, lav, rose)
+#let abl-bar(val, mx, pal) = stack(dir: ltr, spacing: 8pt,
+  box(width: val * 16pt, height: 22pt, radius: 3pt, fill: pal.s),
+  text(size: 24pt, weight: 700, fill: pal.d)[#val M])
+#let fig-abl = table(columns: (2.4fr, 1fr, 1fr, 1fr, 1fr, 1fr), rows: ROW, align: (left + horizon, center + horizon),
+  stroke: none, inset: (x: 8pt, y: 6pt), fill: (_, y) => if y > 1 and calc.even(y) { rgb("#f4faf7") },
+  table.cell(rowspan: 2, th(mint, align: left)[Test arm]),
+  table.cell(colspan: 2, th(mint)[Bug detection]), table.cell(colspan: 3, th(mint)[Idiomatic, bug-free code]),
+  th(mint)[Found /30↑], th(mint)[Tokens↓], th(mint)[False pos. /21↓], th(mint)[Tokens↓], th(mint)[Tool calls↓],
+  table.hline(stroke: 2pt + mint.s),
+  text(size: 25pt)[Both tools], pos[28], pos[0.93 M], pos[0], pos[3.63 M], [47.6],
+  text(size: 25pt)[Z3 library only], pos[28], [1.21 M], pos[0], pos[3.52 M], pos[43.6],
+  text(size: 25pt)[Symbolic exec. only], [27], [1.40 M], pos[0], [4.29 M], [50.9],
+  text(size: 25pt)[Neither (raw model)], [27], [1.52 M], text(fill: rose.d, weight: 700)[7], [4.44 M], [71.2])
+#let defects = (("cpasync_barrier", (0.42, 0.62, 1.47, 1.75)), ("arrive_before_fence", (1.24, 0.90, 3.19, 3.69)), ("missing_fence", (1.77, 2.05, 2.68, 3.33)))
+#let fig-defects = table(columns: (2.3fr, 1fr, 1fr, 1fr, 1fr), rows: ROW, align: (left + horizon, left + horizon),
+  stroke: none, inset: (x: 8pt, y: 6pt), fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#f4faf7") },
+  th(mint, align: left)[Tokens per defect], ..arm-names.zip(arm-col).map(((n, p)) => th(p, align: left)[#n.split(" ").first()]),
+  table.hline(stroke: 2pt + mint.s),
+  ..defects.map(((d, v)) => (text(font: mono, size: 21pt)[#d], ..v.zip(arm-col).map(((x, p)) => abl-bar(x, 3.75, p)))).flatten())
+#card("5", "Ablation: what do the specialized tools buy?", sky)[
+  #grid(columns: (1.2fr, 1fr), column-gutter: 40pt, align: horizon, fig(fig-abl), fig(fig-defects))
+  #v(6pt)
+  The raw model already detects bugs well. The tools *cut token use* (39% on average, up to 76% per defect), remove all *7 false positives* and save a third of the tool calls: with the Z3 library an agent models the async ordering and gets a SAT / RACE-FREE pair in a few calls. #text(font: sans, size: 22pt, fill: muted)[(DeepSeek V4 Pro, tools in isolation.)]
+]
 
 // ───────── case study (full width) ─────────
 #let code(body, h: auto) = block(fill: rgb("#f6f4f9"), stroke: 2pt + grey.s, radius: 6pt,
@@ -235,7 +266,7 @@ witness: [iter_p = 2, lag = 2]
 )
 }
 
-#card("5", "Case study: Z3 exposes a pipelining bug", rose)[
+#card("6", "Case study: Z3 exposes a pipelining bug", rose)[
   #layout(size => {
     let fr = (515, 634, 436, 476)
     let cw = (size.width - 3 * 26pt) / fr.sum()
@@ -244,7 +275,7 @@ witness: [iter_p = 2, lag = 2]
     grid(columns: fr.map(f => f * 1fr), column-gutter: 26pt, ..case-cols(hm))
   })
 ]
-#v(14pt)
+#v(6pt)
 
 // ═════════════ TWO COLUMNS: the two halves of the correctness system ═════════════
 #let tag-chip(pal, t) = box(fill: pal.f, stroke: 1.5pt + pal.s, radius: 5pt, inset: (x: 10pt, y: 3pt),
@@ -273,21 +304,21 @@ witness: [iter_p = 2, lag = 2]
   mono-t("ttg"), [27], text(size: 25pt)[same interpreter on TTGIR; default warp partition only])
 
 #let card6(x) = [
-  #card("6", "Symbolic execution: a Z3 model of TTIR", mint)[
+  #card("7", "Symbolic execution: a Z3 model of TTIR", mint)[
     Each MLIR op becomes a Z3 term over one scalar per tensor; ops the model cannot capture become *fresh opaque symbols* that split the kernel into *symbolic regions* (Z3 inside, the LLM across).
-    #v(8pt)
+    #v(6pt)
     #fig(ttir-map)
-    #v(8pt)
+    #v(6pt)
     The stored value reduces to #text(font: mono, size: 22pt)[exp(load_row − maxnumf_row_minus_max) / addf_denominator], with loads and reductions opaque.#v(x)
   ]
 ]
 
 #let ax-row(n, d) = (table.cell(text(font: sans, weight: 700, size: 22pt, fill: mint.d, n)), text(size: 25pt, d))
 #let card7(x) = [
-  #card("7", "The Gluon-to-Z3 library", mint)[
-    Hardware actions become *events* in a bounded graph ordered by _happens-before_ and _program order_. *Axioms* encode ordering rules; each *theorem* asks Z3 to satisfy the *negation* of a property: *UNSAT* proves it for every schedule, *SAT* gives a counterexample.
-    #v(14pt)
-    #fig(table(columns: (1.15fr, 2.5fr), rows: 38pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 3pt),
+  #card("8", "The Gluon-to-Z3 library", mint)[
+    Hardware actions become *events* ordered by _happens-before_ and _program order_. *Axioms* encode ordering rules; each *theorem* asks Z3 to satisfy the *negation* of a property: *UNSAT* proves it for every schedule, *SAT* gives a counterexample.
+    #v(6pt)
+    #fig(table(columns: (1.15fr, 2.5fr), rows: 33pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 3pt),
       fill: (_, y) => if y > 0 and calc.odd(y) { rgb("#f4faf7") },
       th(mint, colspan: 2, align: left)[Axioms: hardware ordering rules],
       ..ax-row("Sequential consistency", "events form an acyclic timeline"),
@@ -305,13 +336,12 @@ witness: [iter_p = 2, lag = 2]
 ]
 
 #pair(card6, card7, gutter: 40pt)
-#v(14pt)
-#card("8", "Future directions", lav)[
-  #v(10pt)
+#v(6pt)
+#card("9", "Future directions", lav)[
   #grid(columns: (1fr, 1fr, 1fr), column-gutter: 48pt,
-    [*Multi-GPU and heterogeneous targets.* Extend generation and verification to distributed kernels (ParallelKernelBench) and other accelerators, adding proof obligations for collective ordering, cross-rank synchronization and distributed races and deadlocks.],
-    [*Constraint- and statistics-guided search.* Prune software-pipelining schedule families with resource and safety checks before generating code, and use past profiling and verification feedback to cut costly LLM iterations.],
-    [*Verification across the compilation stack.* Integrate further formal tools, such as a formal PTX model, so that kernels are checked at several levels (Gluon, TTGIR, PTX) and not only at the Triton IR and Gluon-library level.],
+    [*Multi-GPU and heterogeneous targets.* Extend generation and verification to distributed kernels (ParallelKernelBench) and other accelerators, with proof obligations for collective ordering and distributed races.],
+    [*Constraint- and statistics-guided search.* Prune pipelining schedule families with resource and safety checks before codegen, and use past feedback to cut costly LLM iterations.],
+    [*Verification across the compilation stack.* Integrate further formal tools, such as a formal PTX model, to verify at several levels of the compilation stack (Gluon, TTGIR, PTX).],
   )
-  #v(22pt)
+  #v(2pt)
 ]
