@@ -4,6 +4,14 @@
 \usepackage[size=a0,orientation=landscape,scale=1.22]{beamerposter}
 \usetheme[panel]{Cascade}
 \setbeamerfont{block title}{size=\large}
+\newlength{\cascadeh}\setlength{\cascadeh}{0pt}
+\newlength{\cascadegap}\setlength{\cascadegap}{1.2cm}
+\setbeamertemplate{block begin}{%
+  \stepcounter{cascadeblock}%
+  \begin{tcolorbox}[enhanced,colback=cascadepeach,colframe=cascadepeach,arc=0.6em,boxrule=0pt,
+    left=1.4em,right=1.4em,top=1.4em,bottom=1.4em,height from={\cascadeh} to {80cm}]
+  {\usebeamerfont{block title}\cascadechip{\arabic{cascadeblock}}\hspace{0.5em}\insertblocktitle}\par\vskip0.6em}
+\setbeamertemplate{block end}{\end{tcolorbox}}
 \usepackage{booktabs,array,listings,multirow,colortbl}
 \usetikzlibrary{arrows.meta,positioning,calc,fit}
 
@@ -42,7 +50,8 @@
 \begin{columns}[t,totalwidth=\linewidth]
 
 \begin{column}{0.315\linewidth}
-\begin{minipage}[t][0.935\textheight][s]{\linewidth}
+\begin{minipage}[t][0.935\textheight][t]{\linewidth}
+  \setlength{\cascadeh}{733pt}
   \begin{block}{Motivation and contributions}
     Tests cover little of the execution space, so agents can \alert{overfit to tested inputs} and miss races and barrier bugs in asynchronous Hopper/Blackwell kernels.
     \begin{itemize}
@@ -51,7 +60,8 @@
       \item Agents get profilers, debuggers and compilers, Z3 via our Gluon-to-Z3 library, and are judged on whole models.
     \end{itemize}
   \end{block}
-  \vfill
+  \vskip\cascadegap
+  \setlength{\cascadeh}{522pt}
   \begin{block}{System: optimize, verify, benchmark}
     \centering
     \resizebox{\linewidth}{!}{\begin{tikzpicture}[node distance=1.1cm]
@@ -70,7 +80,8 @@
       \draw[ar,draw=cascadered] (b.east) -| (X) |- (Y) -- (m.north) node[pos=0.1,above]{\small\itshape repeat until max.\ rounds};
     \end{tikzpicture}}
   \end{block}
-  \vfill
+  \vskip\cascadegap
+  \setlength{\cascadeh}{706pt}
   \begin{block}{Correctness pipeline}
     \centering
     \resizebox{\linewidth}{!}{\begin{tikzpicture}[node distance=1.3cm]
@@ -93,7 +104,8 @@
 \end{column}
 
 \begin{column}{0.315\linewidth}
-\begin{minipage}[t][0.935\textheight][s]{\linewidth}
+\begin{minipage}[t][0.935\textheight][t]{\linewidth}
+  \setlength{\cascadeh}{554pt}
   \begin{block}{Symbolic execution: TTIR to Z3}
     Each MLIR op becomes a Z3 term; ops the model cannot capture become \alert{fresh opaque symbols} that split the kernel into \alert{symbolic regions}. Softmax example:
     \vskip0.6em
@@ -111,7 +123,8 @@
       \bottomrule
     \end{tabular}}
   \end{block}
-  \vfill
+  \vskip\cascadegap
+  \setlength{\cascadeh}{641pt}
   \begin{block}{The Gluon-to-Z3 library}
     Hardware actions become \alert{events} ordered by \emph{happens-before}. Each \emph{theorem} asks Z3 to satisfy the \alert{negation} of a property: \textbf{UNSAT} proves it, \textbf{SAT} gives a counterexample.
     \vskip0.6em
@@ -134,7 +147,8 @@
       \bottomrule
     \end{tabular}}
   \end{block}
-  \vfill
+  \vskip\cascadegap
+  \setlength{\cascadeh}{765pt}
   \begin{block}{Case study: a pipelining bug}
     \begin{columns}[T,totalwidth=\linewidth]
       \column{0.485\linewidth}
@@ -189,7 +203,8 @@ witness: [iter_p = 2, lag = 2]
 \end{column}
 
 \begin{column}{0.315\linewidth}
-\begin{minipage}[t][0.935\textheight][s]{\linewidth}
+\begin{minipage}[t][0.935\textheight][t]{\linewidth}
+  \setlength{\cascadeh}{385pt}
   \begin{block}{Whole-model speedups}
     \centering\small
     \setlength{\tabcolsep}{5pt}
@@ -207,7 +222,8 @@ witness: [iter_p = 2, lag = 2]
     \end{tabular}}
     \par\vskip0.4em{\footnotesize\color{cascadegrey}Median best-round speedup (GB10, 6 rounds); shaded = best.}
   \end{block}
-  \vfill
+  \vskip\cascadegap
+  \setlength{\cascadeh}{371pt}
   \begin{block}{Verification finds more bugs}
     \centering\small
     \resizebox{\linewidth}{!}{\begin{tabular}{@{}lcccccccc@{}}
@@ -223,7 +239,8 @@ witness: [iter_p = 2, lag = 2]
       \bottomrule
     \end{tabular}}
   \end{block}
-  \vfill
+  \vskip\cascadegap
+  \setlength{\cascadeh}{544pt}
   \begin{block}{Ablation: what do the tools buy?}
     \centering\small
     \resizebox{\linewidth}{!}{\begin{tabular}{@{}lccccc@{}}
@@ -250,7 +267,8 @@ witness: [iter_p = 2, lag = 2]
     \end{tabular}}
     \par\vskip0.4em{\footnotesize\color{cascadegrey}DeepSeek V4 Pro (high), tools tested in isolation.}
   \end{block}
-  \vfill
+  \vskip\cascadegap
+  \setlength{\cascadeh}{608pt}
   \begin{block}{Future directions}
     \begin{itemize}
       \item \textbf{Multi-GPU and heterogeneous targets.} Distributed kernels (ParallelKernelBench) and other accelerators, with proof obligations for collective ordering and distributed races.
