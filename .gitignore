@@ -1,1 +1,10 @@
 src/
+latex-src/*.aux
+latex-src/*.log
+latex-src/*.fls
+latex-src/*.fdb_latexmk
+latex-src/*.out
+latex-src/*.nav
+latex-src/*.snm
+latex-src/*.toc
+latex-src/*.vrb

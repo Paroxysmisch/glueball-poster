@@ -1,0 +1,249 @@
+% beamerthemeCascade.sty
+% Poster theme for CASCADE, the Computer Architecture and Semiconductor
+% Design Centre, University of Cambridge.
+%
+% Use with beamerposter, e.g.
+%   \documentclass[final]{beamer}
+%   \usepackage[size=a0,orientation=portrait,scale=1.4]{beamerposter}
+%   \usetheme{Cascade}               % portrait "banner" layout
+%   \usetheme[panel]{Cascade}        % landscape "red side panel" layout
+%
+% Compiles with pdflatex, xelatex or lualatex. With xelatex/lualatex the
+% Rubik font is used for headings if it is installed (free from Google Fonts).
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerthemeCascade}[2026/11/15 CASCADE poster theme]
+
+\newif\ifcascade@panel
+\DeclareOptionBeamer{panel}{\cascade@paneltrue}
+\DeclareOptionBeamer{banner}{\cascade@panelfalse}
+\ProcessOptionsBeamer
+
+\RequirePackage{tikz}
+\RequirePackage[most]{tcolorbox}
+\RequirePackage{qrcode}
+\RequirePackage{iftex}
+\usetikzlibrary{calc}
+
+% ---------------------------------------------------------------------------
+% Colours (from www.cl.cam.ac.uk/research/cascade)
+% ---------------------------------------------------------------------------
+\definecolor{cascadered}{HTML}{DD3025}
+\definecolor{cascadedarkred}{HTML}{A3221A}
+\definecolor{cascadepeach}{HTML}{FFE2C8}
+\definecolor{cascadetext}{HTML}{232830}
+\definecolor{cascadegrey}{HTML}{5B6270}
+\definecolor{cascadelightgrey}{HTML}{9AA0AB}
+
+\setbeamercolor{normal text}{fg=cascadetext,bg=white}
+\setbeamercolor{structure}{fg=cascadered}
+\setbeamercolor{alerted text}{fg=cascadered}
+\setbeamercolor{itemize item}{fg=cascadered}
+\setbeamercolor{itemize subitem}{fg=cascadered}
+\setbeamercolor{enumerate item}{fg=cascadered}
+\setbeamercolor{caption name}{fg=cascadegrey}
+\setbeamercolor{caption}{fg=cascadegrey}
+\setbeamercolor{bibliography entry author}{fg=cascadegrey}
+\setbeamercolor{bibliography entry title}{fg=cascadegrey}
+\setbeamercolor{bibliography entry location}{fg=cascadegrey}
+\setbeamercolor{bibliography entry note}{fg=cascadegrey}
+
+% ---------------------------------------------------------------------------
+% Fonts
+% ---------------------------------------------------------------------------
+\ifPDFTeX
+  \RequirePackage[T1]{fontenc}
+  \RequirePackage[scaled=0.92]{helvet}
+  \renewcommand{\familydefault}{\sfdefault}
+  \newcommand{\cascadeheadfont}{\bfseries}
+\else
+  \RequirePackage{fontspec}
+  \IfFontExistsTF{Arial}{\setsansfont{Arial}}{\setsansfont{TeX Gyre Heros}}
+  \IfFontExistsTF{Rubik}
+    {\newfontfamily\cascade@rubik{Rubik}[UprightFont=*-Regular,BoldFont=*-Bold]%
+     \newcommand{\cascadeheadfont}{\cascade@rubik\bfseries}}
+    {\newcommand{\cascadeheadfont}{\bfseries}}
+\fi
+
+\setbeamerfont{title}{size=\VeryHuge,series=\cascadeheadfont}
+\setbeamerfont{author}{size=\Large,series=\bfseries}
+\setbeamerfont{institute}{size=\normalsize}
+\setbeamerfont{block title}{size=\LARGE,series=\cascadeheadfont}
+\setbeamerfont{caption}{size=\small,shape=\itshape}
+\setbeamertemplate{caption}[default]
+\setbeamertemplate{caption label separator}{.\ }
+\setbeamertemplate{itemize items}[circle]
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{bibliography item}[text]
+
+% ---------------------------------------------------------------------------
+% User commands
+% ---------------------------------------------------------------------------
+\newcommand{\cascadelogopath}{logos/cascade-logo-reversed}
+\newcommand{\ucamlogopath}{logos/ucam-logo-white}
+\newcommand{\cascade@event}{Conference name \textperiodcentered{} City \textperiodcentered{} Date}
+\newcommand{\cascade@contact}{name@cl.cam.ac.uk}
+\newcommand{\cascade@url}{https://www.cl.cam.ac.uk/research/cascade/}
+\newcommand{\cascade@supporters}{Supported by CASCADE's industry partners}
+\newcommand{\cascade@takeaway}{}
+\newcommand{\event}[1]{\renewcommand{\cascade@event}{#1}}
+\newcommand{\contact}[1]{\renewcommand{\cascade@contact}{#1}}
+\newcommand{\qrurl}[1]{\renewcommand{\cascade@url}{#1}}
+\newcommand{\supporters}[1]{\renewcommand{\cascade@supporters}{#1}}
+\newcommand{\takeaway}[1]{\renewcommand{\cascade@takeaway}{#1}}
+
+% Numbered "chip" used in section headings
+\newcounter{cascadeblock}
+\newcommand{\cascadechip}[1]{%
+  \tikz[baseline=(c.base)]\node[fill=cascadered,text=cascadepeach,rounded corners=0.12em,
+    minimum size=1.35em,inner sep=0pt,font=\cascadeheadfont](c){#1};}
+
+% Headline statistic: \cascadestat{2.3$\times$}{speed-up}
+\newcommand{\cascadestat}[2]{%
+  \begin{minipage}[t]{\linewidth}\centering
+    {\fontsize{64}{70}\selectfont\cascadeheadfont\usebeamercolor[fg]{cascade stat}#1}\par\vskip0.2em
+    {\small\usebeamercolor[fg]{cascade stat label}#2}
+  \end{minipage}}
+\setbeamercolor{cascade stat}{fg=cascadered}
+\setbeamercolor{cascade stat label}{fg=cascadegrey}
+
+% Figure placeholder: \cascadeplaceholder{height}
+\newcommand{\cascadeplaceholder}[1]{%
+  \begin{tikzpicture}
+    \draw[cascadered,line width=2pt,dash pattern=on 8pt off 6pt,rounded corners=0.4em,
+          fill=cascadepeach] (0,0) rectangle (\linewidth,#1);
+    \node[cascadered,align=center] at (0.5\linewidth,0.5*#1)
+      {\textbf{Insert figure here}\\[0.2em]\small\texttt{\string\includegraphics[width=\string\linewidth]\{file\}}};
+  \end{tikzpicture}}
+
+% Peach card (stats row, highlights)
+\newtcolorbox{cascadecard}[1][]{enhanced,colback=cascadepeach,colframe=cascadepeach,
+  arc=0.5em,boxrule=0pt,left=1em,right=1em,top=1em,bottom=1em,#1}
+
+% Red takeaway box: \begin{takeawaybox}[KEY TAKEAWAY] ... \end{takeawaybox}
+\newtcolorbox{takeawaybox}[1][KEY TAKEAWAY]{enhanced,colback=cascadered,colframe=cascadered,
+  arc=0.5em,boxrule=0pt,left=1.2em,right=1.2em,top=1.2em,bottom=1.2em,
+  fontupper=\large\bfseries\color{white}\raggedright,
+  before upper={{\small\color{cascadepeach}\addfontfeature@cascade #1}\par\vskip0.3em}}
+\ifPDFTeX\newcommand{\addfontfeature@cascade}{}\else\newcommand{\addfontfeature@cascade}{\addfontfeatures{LetterSpace=8}}\fi
+
+% ---------------------------------------------------------------------------
+% Blocks
+%   block       -> numbered section heading (chip + title)
+%   alertblock  -> red takeaway box
+%   exampleblock-> peach card with optional title
+% ---------------------------------------------------------------------------
+\ifcascade@panel
+  % In the panel layout every section is a peach card
+  \setbeamertemplate{block begin}{%
+    \stepcounter{cascadeblock}%
+    \begin{tcolorbox}[enhanced,colback=cascadepeach,colframe=cascadepeach,arc=0.6em,boxrule=0pt,
+      left=1.4em,right=1.4em,top=1.4em,bottom=1.4em]
+    {\usebeamerfont{block title}\cascadechip{\arabic{cascadeblock}}\hspace{0.5em}\insertblocktitle}\par\vskip0.6em}
+  \setbeamertemplate{block end}{\end{tcolorbox}\vskip1em}
+\else
+  \setbeamertemplate{block begin}{%
+    \stepcounter{cascadeblock}\par
+    {\usebeamerfont{block title}\cascadechip{\arabic{cascadeblock}}\hspace{0.5em}\insertblocktitle}\par\vskip0.6em}
+  \setbeamertemplate{block end}{\par\vskip2.2em}
+\fi
+\setbeamertemplate{block alerted begin}{\begin{takeawaybox}[\insertblocktitle]}
+\setbeamertemplate{block alerted end}{\end{takeawaybox}\vskip1.5em}
+\setbeamertemplate{block example begin}{%
+  \begin{cascadecard}\ifx\insertblocktitle\@empty\else{\usebeamerfont{block title}\insertblocktitle}\par\vskip0.5em\fi}
+\setbeamertemplate{block example end}{\end{cascadecard}\vskip1.5em}
+
+% ---------------------------------------------------------------------------
+% Page furniture
+% ---------------------------------------------------------------------------
+\ifcascade@panel
+  % ---- Landscape: red side panel ------------------------------------------
+  \newlength{\cascadepanelwidth}\setlength{\cascadepanelwidth}{0.265\paperwidth}
+  \setbeamersize{text margin left=\dimexpr\cascadepanelwidth+3cm\relax,text margin right=3cm}
+  \setbeamertemplate{headline}{\vskip3cm}
+  \setbeamertemplate{footline}{\vskip3cm}
+  \setbeamertemplate{background canvas}{%
+    \begin{tikzpicture}[remember picture,overlay]
+      \fill[cascadered] (current page.north west) rectangle
+        ($(current page.south west)+(\cascadepanelwidth,0)$);
+      \node[anchor=north west,inner sep=0] at ($(current page.north west)+(3cm,-3cm)$)
+        {\includegraphics[width=0.62\cascadepanelwidth]{\cascadelogopath}};
+      \node[anchor=north west,inner sep=0]
+        at ($(current page.north west)+(3cm,-14cm)$) {\begin{minipage}[t]{\dimexpr\cascadepanelwidth-6cm\relax}%
+          \raggedright\hyphenpenalty=10000
+          {\usebeamerfont{title}\color{white}\raggedright\inserttitle\par}\vskip1.2em
+          {\usebeamerfont{author}\color{cascadepeach}\insertauthor\par}\vskip0.6em
+          {\usebeamerfont{institute}\color{white}\insertinstitute\par}\vskip2.5em
+          \ifx\cascade@takeaway\@empty\else
+          \begin{tcolorbox}[enhanced,colback=cascadered,colframe=white,boxrule=3pt,arc=0.6em,
+            left=1.2em,right=1.2em,top=1.4em,bottom=1.4em]
+            {\small\color{cascadepeach}IN ONE SENTENCE}\par\vskip0.3em
+            {\Large\bfseries\color{white}\raggedright\cascade@takeaway\par}
+          \end{tcolorbox}\fi\end{minipage}};
+      \node[anchor=south west,inner sep=0] (ucam) at ($(current page.south west)+(3cm,3cm)$)
+        {\includegraphics[width=0.5\cascadepanelwidth]{\ucamlogopath}};
+      \node[anchor=south west,inner sep=0]
+        at ($(ucam.north west)+(0,2cm)$)
+        {\begin{minipage}[b]{0.55\cascadepanelwidth}\raggedright
+          {\color{cascadepeach}\small\cascade@event\par}\vskip0.3em{\color{white}\footnotesize\cascade@contact\par}\end{minipage}};
+      \node[anchor=south east,fill=white,inner sep=0.6cm,rounded corners=0.3cm]
+        at ($(current page.south west)+(\cascadepanelwidth,0)+(-3cm,3cm)$)
+        {\qrcode[height=6cm,nolink]{\cascade@url}};
+    \end{tikzpicture}}
+\else
+  % ---- Portrait: red banner + peach strip + red footer --------------------
+  \setbeamersize{text margin left=3.3cm,text margin right=3.3cm}
+  \setbeamertemplate{headline}{%
+    \leavevmode
+    \begin{beamercolorbox}[wd=\paperwidth,ht=11.7cm,dp=0pt]{}
+      \begin{tikzpicture}[x=1cm,y=1cm]
+        \fill[cascadered] (0,0) rectangle (\paperwidth,11.7);
+        \node[anchor=west,inner sep=0] at (3.3,5.85)
+          {\includegraphics[height=5.1cm]{\ucamlogopath}};
+        \node[anchor=east,inner sep=0] at ($(\paperwidth,5.85)+(-3.3,0)$)
+          {\includegraphics[height=7.5cm]{\cascadelogopath}};
+      \end{tikzpicture}%
+    \end{beamercolorbox}\par\nointerlineskip
+    \begin{beamercolorbox}[wd=\paperwidth,ht=2.55cm,dp=0pt]{}
+      \begin{tikzpicture}[x=1cm,y=1cm]
+        \fill[cascadepeach] (0,0) rectangle (\paperwidth,2.55);
+        \node[anchor=west,inner sep=0,font=\small\bfseries,text=cascadetext] at (3.3,1.275)
+          {Computer Architecture and Semiconductor Design Centre};
+        \node[anchor=east,inner sep=0,font=\small,text=cascadetext] at ($(\paperwidth,1.275)+(-3.3,0)$)
+          {\cascade@event};
+      \end{tikzpicture}%
+    \end{beamercolorbox}\par\nointerlineskip
+    \vskip4cm
+    \hspace*{3.3cm}\begin{minipage}{\dimexpr\paperwidth-6.6cm\relax}
+      {\usebeamerfont{title}\usebeamercolor[fg]{normal text}\raggedright\inserttitle\par}\vskip1.4em
+      {\usebeamerfont{author}\color{cascadered}\insertauthor\par}\vskip0.5em
+      {\usebeamerfont{institute}\color{cascadegrey}\insertinstitute\par}
+    \end{minipage}\par\vskip4cm}
+  \setbeamertemplate{footline}{%
+    \leavevmode
+    \begin{beamercolorbox}[wd=\paperwidth,ht=9.9cm,dp=0pt]{}
+      \begin{tikzpicture}[x=1cm,y=1cm]
+        \fill[cascadered] (0,0) rectangle (\paperwidth,9.9);
+        \node[anchor=west,inner sep=0,text=white]
+          at (3.3,4.95) {\begin{minipage}{36cm}\normalsize\raggedright Contact: \cascade@contact\par\cascade@url\end{minipage}};
+        \node[anchor=west,inner sep=0,text=cascadepeach]
+          at (43,4.95) {\begin{minipage}{26cm}\small\raggedright\hyphenpenalty=10000 \cascade@supporters\end{minipage}};
+        \node[anchor=east,fill=white,inner sep=0.6cm,rounded corners=0.3cm]
+          at ($(\paperwidth,4.95)+(-3.3,0)$) {\qrcode[height=6.5cm,nolink]{\cascade@url}};
+      \end{tikzpicture}%
+    \end{beamercolorbox}}
+\fi
+
+% Bar-chart style matching the PowerPoint templates
+\AtBeginDocument{\@ifpackageloaded{pgfplots}{\pgfplotsset{
+  cascade bars/.style={ybar, ymin=0, axis lines*=left, ymajorgrids, grid style={black!12},
+    every axis plot/.append style={draw=none}, area legend,
+    nodes near coords, nodes near coords style={font=\footnotesize},
+    /pgf/number format/.cd, fixed, fixed zerofill, precision=1, /pgfplots/.cd,
+    tick label style={font=\small,text=cascadegrey}, label style={text=cascadegrey},
+    legend style={at={(0.5,-0.1)},anchor=north,legend columns=-1,draw=none,fill=none,font=\small,
+      /tikz/every even column/.append style={column sep=1.5em}},
+    enlarge x limits=0.18,
+    legend image code/.code={\fill[##1] (0em,-0.35em) rectangle (0.9em,0.45em);}}}}{}}
+
+\mode<all>

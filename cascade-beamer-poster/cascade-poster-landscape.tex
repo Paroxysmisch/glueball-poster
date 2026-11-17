@@ -1,0 +1,101 @@
+% CASCADE A0 landscape poster (Beamer) with the red side panel
+% Compile with:  latexmk -pdf cascade-poster-landscape.tex
+%   (or -xelatex / -lualatex to use the Rubik heading font, if installed)
+\documentclass[final]{beamer}
+\usepackage[size=a0,orientation=landscape,scale=1.4]{beamerposter}
+\usetheme[panel]{Cascade}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+
+\title{Your poster title, big and bold}
+\author{Author One, Author Two}
+\institute{Department of Computer Science and Technology, University of Cambridge}
+\event{Conference name \textperiodcentered{} City \textperiodcentered{} Date}
+\contact{name@cl.cam.ac.uk}
+\qrurl{https://www.cl.cam.ac.uk/research/cascade/}   % the QR code links here
+\takeaway{The single result or idea you want people to leave with --- written for a non-specialist.}
+
+\begin{document}
+\begin{frame}[t]
+\begin{columns}[t,totalwidth=\linewidth]
+
+% ---------------------------------------------------------------- Column 1
+\begin{column}{0.315\linewidth}
+  \begin{block}{The problem}
+    What limits today's processors, accelerators, interconnects or design
+    tools --- and why it matters now.
+    \begin{itemize}
+      \item Constraint or trend one
+      \item Constraint or trend two
+    \end{itemize}
+  \end{block}
+
+  \begin{block}{Our approach}
+    Describe the key idea and how it differs from prior work.
+    \begin{figure}
+      \cascadeplaceholder{46cm}
+      \caption{Method or tool-flow diagram.}
+    \end{figure}
+  \end{block}
+\end{column}
+
+% ---------------------------------------------------------------- Column 2
+\begin{column}{0.315\linewidth}
+  \begin{block}{Design}
+    \begin{figure}
+      \cascadeplaceholder{46cm}
+      \caption{Architecture / layout / die photo.}
+    \end{figure}
+    Two or three lines walking the reader through the figure.
+  \end{block}
+
+  % Headline results: red card with peach numbers
+  \setbeamercolor{cascade stat}{fg=cascadepeach}
+  \setbeamercolor{cascade stat label}{fg=white}
+  \begin{tcolorbox}[enhanced,colback=cascadered,colframe=cascadered,arc=0.6em,boxrule=0pt,
+      left=1.4em,right=1.4em,top=1.6em,bottom=3em]
+    {\usebeamerfont{block title}\color{white}Headline results}\par\vskip1.5em
+    \begin{columns}[t,totalwidth=\linewidth]
+      \column{0.32\linewidth}\cascadestat{2.3$\times$}{throughput}
+      \column{0.32\linewidth}\cascadestat{$-$41\%}{energy / op}
+      \column{0.32\linewidth}\cascadestat{$<$1\%}{area overhead}
+    \end{columns}
+  \end{tcolorbox}
+\end{column}
+
+% ---------------------------------------------------------------- Column 3
+\begin{column}{0.315\linewidth}
+  \begin{block}{Evaluation}
+    \centering
+    \begin{tikzpicture}
+      \begin{axis}[
+          width=\linewidth, height=45cm,
+          cascade bars, bar width=1.3cm, ymax=3.6, ytick={0,1,2,3}, yticklabel style={/pgf/number format/precision=0},
+          symbolic x coords={Bench A,Bench B,Bench C,Bench D}, xtick=data,
+          ylabel={Speed-up over baseline},
+          ]
+        \addplot[fill=cascadelightgrey] coordinates {(Bench A,1.0) (Bench B,1.0) (Bench C,1.0) (Bench D,1.0)};
+        \addplot[fill=cascadered] coordinates {(Bench A,1.6) (Bench B,2.3) (Bench C,1.4) (Bench D,3.1)};
+        \legend{Baseline, Our design}
+      \end{axis}
+    \end{tikzpicture}
+  \end{block}
+
+  \begin{block}{Conclusions}
+    \begin{itemize}
+      \item Main finding, stated plainly
+      \item What it enables next
+      \item Open questions and future work
+    \end{itemize}
+    \vskip0.8em
+    Where the work goes next, and how industry partners or students can get involved.
+    \vskip1.5em
+    {\footnotesize\color{cascadegrey}
+     \textbf{\color{cascadetext}References}\par
+     [1] A.~Author et al., Paper title, \emph{Venue}, Year.\par}
+  \end{block}
+\end{column}
+
+\end{columns}
+\end{frame}
+\end{document}
