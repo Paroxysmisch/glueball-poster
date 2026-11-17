@@ -10,7 +10,7 @@
   \stepcounter{cascadeblock}%
   \begin{tcolorbox}[enhanced,colback=cascadepeach,colframe=cascadepeach,arc=0.6em,boxrule=0pt,
     left=1.4em,right=1.4em,top=1.4em,bottom=1.4em,height from={\cascadeh} to {80cm}]
-  {\usebeamerfont{block title}\cascadechip{\arabic{cascadeblock}}\hspace{0.5em}\insertblocktitle}\par\vskip0.6em}
+  {\usebeamerfont{block title}\cascadechip{\arabic{cascadeblock}}\hspace{0.5em}\insertblocktitle}\par\vskip1.0em}
 \setbeamertemplate{block end}{\end{tcolorbox}}
 \usepackage{booktabs,array,listings,multirow,colortbl}
 \usetikzlibrary{arrows.meta,positioning,calc,fit}
@@ -34,7 +34,7 @@
   emph={GluonVerificationContext,map_async_copy_global_to_shared,map_async_commit_group,map_async_wait_group,map_load,program_order,check_async_race_freedom,wait_group,perform_add},
   emphstyle=\color{codeblue}\bfseries,
   frame=single,rulecolor=\color{cascadelightgrey!60},backgroundcolor=\color{white},
-  framesep=0.7em,xleftmargin=0.7em,xrightmargin=0.7em,aboveskip=0.3em,belowskip=0.3em}
+  framesep=0.7em,xleftmargin=0.7em,xrightmargin=0.7em,aboveskip=0.15em,belowskip=0.15em}
 
 % ---- unified table style: red header, alternating peach rows, thin red rule
 \newcommand{\hd}[1]{\textcolor{white}{\bfseries #1}}
@@ -77,6 +77,7 @@
   \vskip\cascadegap
   \setlength{\cascadeh}{596pt}
   \begin{block}{System: optimize, verify, benchmark}
+    \vfill
     \centering
     \resizebox{\linewidth}{!}{\begin{tikzpicture}[node distance=1.1cm]
       \node[tr] (a) {\textbf{AST translation}\\[-2pt]\small\itshape Triton $\to$ Gluon};
@@ -93,10 +94,13 @@
       \coordinate (Y) at ($(m.north)+(0,1.4)$);
       \draw[ar,draw=cascadered] (b.east) -| (X) |- (Y) -- (m.north) node[pos=0.1,above]{\small\itshape repeat until max.\ rounds};
     \end{tikzpicture}}
+  
+    \vfill
   \end{block}
   \vskip\cascadegap
-  \setlength{\cascadeh}{844pt}
+  \setlength{\cascadeh}{849pt}
   \begin{block}{Correctness pipeline}
+    \vfill
     \centering
     \resizebox{\linewidth}{!}{\begin{tikzpicture}[node distance=1.3cm]
       \node[nd,fill=cascadelightgrey!15] (py) {PyTorch reference};
@@ -113,6 +117,8 @@
       \draw[rj] (d) -- (c) node[midway,above]{\small\itshape incorrect};
       \draw[rj] (c.north) -- ++(0,0) |- (s.east) node[pos=0.8,above,xshift=1.2cm]{\small\itshape retry};
     \end{tikzpicture}}
+  
+    \vfill
   \end{block}
 \end{minipage}
 \end{column}
@@ -156,7 +162,7 @@
     \end{tabular}}
   \end{block}
   \vskip\cascadegap
-  \setlength{\cascadeh}{0pt}
+  \setlength{\cascadeh}{909pt}
   \begin{block}{Case study: a pipelining bug}
     \textbf{\color{cascadedarkred}(a) The bug}
 \begin{lstlisting}
@@ -168,7 +174,7 @@ perform_add(
     a_smem[i % num_buffers],
     b_smem[i % num_buffers])
 \end{lstlisting}
-    \vskip0.5em
+    \vskip0.1em
     \textbf{\color{cascadedarkred}(b) Symbolic model}
 \begin{lstlisting}
 ctx.map_async_copy_global_to_shared(
@@ -186,7 +192,7 @@ ctx.program_order(wait.id, load.id)
 safe, model = (
     ctx.check_async_race_freedom())
 \end{lstlisting}
-    \vskip0.5em
+    \vskip0.1em
     \textbf{\color{cascadedarkred}(c) Z3 verdict}
 \begin{lstlisting}[language=z3out]
 wait_group(2):
@@ -199,7 +205,7 @@ DATA RACE detected:
     LOAD SHARED@0x100
     proxy=GENERIC
 \end{lstlisting}
-    \vskip0.5em
+    \vskip0.1em
     \textbf{\color{cascadedarkred}(d) Pipeline witness}
 \begin{lstlisting}[language=z3out]
 check_pipeline_stage_isolation(
@@ -216,6 +222,7 @@ witness: [iter_p = 2, lag = 2]
 \begin{minipage}[t][0.935\textheight][t]{\linewidth}
   \setlength{\cascadeh}{439pt}
   \begin{block}{Whole-model speedups}
+    \vfill
     \centering\small
     \resizebox{\linewidth}{!}{\tablestyle{2}\begin{tabular}{llccccc}
       \rowcolor{cascadered}\hd{Workload} & \hd{Type} & \hd{\shortstack{Astra\\+CODEX}} & \hd{\shortstack{DeepSeek\\V4 Pro}} & \hd{\shortstack{DeepSeek\\V4 Flash}} & \hd{\shortstack{Meta Muse\\Spark 1.3}} & \hd{\shortstack{GPT\\5.6 Sol}}\\
@@ -228,10 +235,13 @@ witness: [iter_p = 2, lag = 2]
       \arrayrulecolor{cascadered}\bottomrule
     \end{tabular}}
     \par\vskip0.4em{\footnotesize\color{cascadegrey}Median best-round speedup (GB10, 6 rounds); shaded = best.}
+  
+    \vfill
   \end{block}
   \vskip\cascadegap
   \setlength{\cascadeh}{430pt}
   \begin{block}{Verification finds more bugs}
+    \vfill
     \centering\small
     \resizebox{\linewidth}{!}{\tablestyle{3}\begin{tabular}{lcccccccc}
       \rowcolor{cascadered} & \multicolumn{4}{c}{\hd{Generic suite}} & \multicolumn{4}{c}{\hd{Sync suite}}\\
@@ -243,10 +253,13 @@ witness: [iter_p = 2, lag = 2]
       GPT 5.6 Sol & 21 & \good{+2} & 0 & 0 & 9 & \good{+1} & 1 & \good{$-$1}\\
       \arrayrulecolor{cascadered}\bottomrule
     \end{tabular}}
+  
+    \vfill
   \end{block}
   \vskip\cascadegap
   \setlength{\cascadeh}{621pt}
   \begin{block}{Ablation: what do the tools buy?}
+    \vfill
     \centering\small
     \resizebox{\linewidth}{!}{\tablestyle{3}\begin{tabular}{lccccc}
       \rowcolor{cascadered} & \multicolumn{2}{c}{\hd{Bug detection}} & \multicolumn{3}{c}{\hd{Bug-free code}}\\
@@ -267,6 +280,8 @@ witness: [iter_p = 2, lag = 2]
       \arrayrulecolor{cascadered}\bottomrule
     \end{tabular}}
     \par\vskip0.4em{\footnotesize\color{cascadegrey}DeepSeek V4 Pro (high), tools tested in isolation.}
+  
+    \vfill
   \end{block}
   \vskip\cascadegap
   \setlength{\cascadeh}{446pt}
