@@ -1,7 +1,7 @@
 % Glueball A0 landscape poster, built on the CASCADE Beamer theme.
 % Build:  latexmk -pdf glueball-poster.tex
 \documentclass[final]{beamer}
-\usepackage[size=a0,orientation=landscape,scale=0.72]{beamerposter}
+\usepackage[size=a0,orientation=landscape,scale=0.85]{beamerposter}
 \usetheme[panel]{Cascade}
 \setbeamerfont{block title}{size=\large}
 \newlength{\cascadeh}\setlength{\cascadeh}{0pt}
@@ -87,47 +87,27 @@
 \begin{document}
 \begin{frame}[t,fragile]
 \setlength{\cascadeh}{0pt}
+\begin{columns}[t,totalwidth=\linewidth]
+\begin{column}{0.485\linewidth}
   \def\cascadevalign{center}
   \begin{block}{System: optimize, verify, benchmark}
     \centering
-    \resizebox{0.72\linewidth}{!}{\begin{tikzpicture}[node distance=1.2cm]
-      \node[tr] (a) {\textbf{AST translation}\\[-2pt]\small\itshape Triton $\to$ Gluon};
-      \node[tr,fill=cascadepeach!60,right=of a] (m) {\textbf{Gluon model}};
-      \node[nd,fill=blue!6,right=of m] (p) {\textbf{Profile}\\[-2pt]\small\itshape ncu, Proton, probes};
-      \node[nd,fill=blue!6,right=of p] (q) {\textbf{Propose}\\[-2pt]\small\itshape ranked portfolio};
-      \node[nd,fill=blue!6,right=of q] (i) {\textbf{Implement}\\[-2pt]\small\itshape targeted edits};
-      \node[ok,right=of i] (v) {\textbf{Verify}\\[-2pt]\small\itshape tests + Z3 tools};
-      \node[nd,right=of v] (b) {\textbf{Benchmark}\\[-2pt]\small\itshape full model};
-      \foreach \x/\y in {a/m,m/p,p/q,q/i,i/v,v/b} \draw[ar] (\x) -- (\y);
-      \draw[rj] (v.south) -- ++(0,-1.4) -| (i.south) node[pos=0.25,below]{\small\itshape reject: retry with feedback};
-      \draw[ar,draw=cascadered] (b.north) -- ++(0,1.6) -| (m.north) node[pos=0.25,above]{\small\itshape repeat until max.\ rounds};
-    \end{tikzpicture}}
+    \includegraphics[width=\linewidth]{diagrams/model_pipeline.pdf}
   \end{block}
-\vskip\cascadegap
+\end{column}
+\begin{column}{0.485\linewidth}
   \def\cascadevalign{center}
   \begin{block}{Correctness pipeline}
     \centering
-    \resizebox{0.68\linewidth}{!}{\begin{tikzpicture}[node distance=1.2cm]
-      \node[nd,fill=cascadelightgrey!15,minimum height=2.2cm] (t) {Reference Triton};
-      \node[nd,fill=cascadelightgrey!15,minimum height=2.2cm,below=2mm of t] (py) {PyTorch reference};
-      \node[tr,minimum height=2.2cm,below=2mm of py] (g) {Previous Gluon};
-      \node[ok,right=2.4cm of py] (s) {\textbf{Split \& align}};
-      \node[ok,right=of s] (e) {\textbf{Block-wise equivalence}\\[-2pt]\small\itshape LLM reasoning + Z3};
-      \node[ok,right=of e] (d) {\textbf{Verdict}};
-      \node[ok,right=2.4cm of d] (r) {\textbf{Correctness report}};
-      \node[bd,below=1.1cm of d] (c) {\textbf{Counterexample}\\[-2pt]\small\itshape witness on real GPU};
-      \foreach \x in {t,py,g} \draw[ar] (\x.east) -- ++(0.6,0) |- (s.west);
-      \draw[ar] (s) -- (e); \draw[ar] (e) -- (d);
-      \draw[ar,draw=okgreen] (d) -- (r) node[midway,above]{\small\itshape correct};
-      \draw[rj] (d) -- (c) node[midway,right]{\small\itshape incorrect};
-      \draw[rj] (c.west) -| (s.south) node[pos=0.25,above]{\small\itshape does not reproduce $\to$ retry};
-    \end{tikzpicture}}
+    \includegraphics[width=\linewidth]{diagrams/correctness_detail.pdf}
   \end{block}
+\end{column}
+\end{columns}
 \vskip\cascadegap
 \begin{columns}[t,totalwidth=\linewidth]
 \begin{column}{0.315\linewidth}
-\begin{minipage}[t][1184pt][t]{\linewidth}
-  \setlength{\cascadeh}{490pt}
+\begin{minipage}[t][0pt][t]{\linewidth}
+  \setlength{\cascadeh}{702pt}
   \def\cascadevalign{top}
   \begin{block}{Symbolic execution: TTIR to Z3}
     Each MLIR op becomes a Z3 term; ops the model cannot capture become \alert{fresh opaque symbols} that split the kernel into \alert{symbolic regions}. Softmax example:
@@ -145,7 +125,7 @@
     \end{tabular}}
   \end{block}
   \vskip\cascadegap
-  \setlength{\cascadeh}{597pt}
+  \setlength{\cascadeh}{806pt}
   \def\cascadevalign{top}
   \begin{block}{The Gluon-to-Z3 library}
     Hardware actions become \alert{events} ordered by \emph{happens-before}. Each \emph{theorem} asks Z3 to satisfy the \alert{negation} of a property: \textbf{UNSAT} proves it, \textbf{SAT} gives a counterexample.
@@ -168,8 +148,8 @@
 \end{minipage}
 \end{column}
 \begin{column}{0.315\linewidth}
-\begin{minipage}[t][1184pt][t]{\linewidth}
-  \setlength{\cascadeh}{474pt}
+\begin{minipage}[t][0pt][t]{\linewidth}
+  \setlength{\cascadeh}{679pt}
   \def\cascadevalign{center}
   \begin{block}{Whole-model speedups}
     \centering\small
@@ -187,7 +167,7 @@
   
   \end{block}
   \vskip\cascadegap
-  \setlength{\cascadeh}{616pt}
+  \setlength{\cascadeh}{826pt}
   \def\cascadevalign{center}
   \begin{block}{Ablation: what do the tools buy?}
     \centering\small
@@ -215,8 +195,8 @@
 \end{minipage}
 \end{column}
 \begin{column}{0.315\linewidth}
-\begin{minipage}[t][1184pt][t]{\linewidth}
-  \setlength{\cascadeh}{737pt}
+\begin{minipage}[t][0pt][t]{\linewidth}
+  \setlength{\cascadeh}{990pt}
   \def\cascadevalign{top}
   \begin{block}{Case study: a pipelining bug}
     \textbf{\color{cascadedarkred}(a) The bug}
@@ -271,7 +251,7 @@ witness: [iter_p = 2, lag = 2]
 \end{lstlisting}
   \end{block}
   \vskip\cascadegap
-  \setlength{\cascadeh}{352pt}
+  \setlength{\cascadeh}{516pt}
   \def\cascadevalign{center}
   \begin{block}{Verification finds more bugs}
     \centering\small

@@ -8,3 +8,4 @@ latex-src/*.nav
 latex-src/*.snm
 latex-src/*.toc
 latex-src/*.vrb
+paper-src/
