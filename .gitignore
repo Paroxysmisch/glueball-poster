@@ -9,3 +9,4 @@ latex-src/*.snm
 latex-src/*.toc
 latex-src/*.vrb
 paper-src/
+.renders
