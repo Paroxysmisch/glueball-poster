@@ -3,6 +3,7 @@
 // CASCADE poster theme (cascade-beamer-poster/beamerthemeCascade.sty).
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
 #import "@preview/showybox:2.0.4": showybox
+#import "@preview/tiaoma:0.3.0": qrcode
 
 // ───────────── palette: CASCADE (www.cl.cam.ac.uk/research/cascade) ─────────────
 #let cascade-red = rgb("#DD3025")
@@ -17,7 +18,10 @@
 #let mint = (f: rgb("#FCE0DB"), s: rgb("#DD3025"), d: rgb("#A3221A"))  // correctness: CASCADE red
 #let sun = (f: rgb("#FFE2C8"), s: rgb("#F0A06A"), d: rgb("#9C4A12"))   // gluon / results: CASCADE peach
 #let rose = (f: rgb("#F6D0CB"), s: rgb("#A3221A"), d: rgb("#7D1A14"))  // retry / failure: dark red
-#let grey = (f: rgb("#F1F2F4"), s: rgb("#9AA0AB"), d: rgb("#5B6270"))  // CASCADE greys
+#let grey = (f: rgb("#F1F2F4"), s: rgb("#9AA0AB"), d: rgb("#5B6270"))  // CASCADE greys (inputs only)
+#let ok = (f: rgb("#E2F3E8"), s: rgb("#3FA76B"), d: rgb("#1E7A47"))    // success: verify, correct, improvements
+#let amber = (f: rgb("#FDEFD6"), s: rgb("#E8A33D"), d: rgb("#9A6410"))
+#let charcoal = (f: rgb("#E7E9EC"), s: rgb("#3C4250"), d: rgb("#2A2F38"))
 #let stripe = rgb("#FFF5F1")       // alternating table rows
 #let stripe-warm = rgb("#FFF8F0")
 
@@ -28,8 +32,19 @@
 #let mono = "Source Code Pro"
 
 // ───────────── page & text ─────────────
+#let footer-h = 58mm
+#let qr-url = "https://www.cl.cam.ac.uk/research/cascade/"   // placeholder: swap for the paper / code link
 #set page(width: 841mm, height: 1189mm, fill: paper,
-  margin: (x: 24mm, top: 18mm, bottom: 16mm))
+  margin: (x: 24mm, top: 18mm, bottom: footer-h + 12mm),
+  background: place(bottom, rect(width: 100%, height: footer-h, fill: cascade-red)),
+  foreground: place(bottom + left, block(width: 100%, height: footer-h, inset: (x: 24mm + 40pt, y: 10mm),
+    grid(columns: (auto, 1fr, auto), column-gutter: 60pt, align: horizon,
+      image("latex-src/logos/ucam-logo-white.png", height: 26mm),
+      stack(spacing: 14pt,
+        text(font: "Nimbus Sans", size: 30pt, weight: 700, fill: white)[Computer Architecture and Semiconductor Design Centre],
+        text(font: "Nimbus Sans", size: 24pt, fill: cascade-peach)[Department of Computer Science and Technology, University of Cambridge]),
+      box(fill: white, radius: 8pt, inset: 12pt, qrcode(qr-url, width: 36mm)),
+    ))))
 #set text(font: body-font, size: 25.5pt, fill: ink, lang: "en", hyphenate: false, weight: 400)
 #set par(justify: false, leading: 0.72em, spacing: 1.1em)
 #set list(indent: 0pt, body-indent: 0.55em, spacing: 0.85em, marker: box(baseline: -0.05em, circle(radius: 0.17em, fill: cascade-red, stroke: none)))
@@ -39,16 +54,16 @@
 #show raw: set text(font: mono)
 
 // ───────────── building blocks ─────────────
-#let chip(n) = box(width: 50pt, height: 50pt, fill: cascade-red, radius: 5pt, baseline: -6pt,
-  align(center + horizon, text(font: sans, size: 30pt, weight: 700, fill: cascade-peach)[#n]))
+#let chip(n) = box(width: 42pt, height: 42pt, fill: cascade-red, radius: 5pt, baseline: -5pt,
+  align(center + horizon, text(font: sans, size: 26pt, weight: 700, fill: cascade-peach)[#n]))
 #let card(num, title, pal, body) = showybox(
   frame: (
     title-color: white, border-color: rgb("#F0C6B6"), body-color: white,
     thickness: 1.6pt, radius: 8pt,
-    inset: (x: 44pt, y: 12pt), body-inset: (x: 56pt, y: 13pt),
+    inset: (x: 44pt, y: 15pt), body-inset: (x: 56pt, y: 17pt),
   ),
   title-style: (boxed-style: none, sep-thickness: 0pt),
-  title: text(font: sans, size: 40pt, weight: 700, fill: ink)[#chip(num)#h(18pt)#title],
+  title: text(font: sans, size: 34pt, weight: 700, fill: ink)[#chip(num)#h(16pt)#title],
   breakable: false, width: 100%, body)
 
 #let fit(body) = layout(size => {
@@ -71,20 +86,19 @@
 #let tag(pal, t) = text(font: serif, size: 28pt, style: "italic", weight: 600, fill: pal.d, t)
 
 // ═════════════ HEADER ═════════════
-#block(width: 100%, fill: cascade-red, outset: (x: 24mm, top: 18mm), inset: (x: 40pt, top: 6pt, bottom: 20pt), below: 0pt)[
-  #grid(columns: (auto, auto, 1fr, auto), column-gutter: 54pt, align: horizon,
-    text(font: display, size: 120pt, weight: 700, tracking: -1pt, fill: white)[Glueball],
-    line(angle: 90deg, length: 120pt, stroke: 3pt + cascade-peach),
-    stack(spacing: 16pt,
-      text(font: serif, size: 50pt, weight: 700, fill: white)[Agentic Generation and Verification of \ Hardware-Optimized Gluon Kernels],
-      text(font: sans, size: 30pt, fill: cascade-peach)[Anonymous authors]),
-    image("latex-src/logos/cascade-logo-reversed.pdf", height: 150pt),
+// The banner's red starts 18mm above the text area (outset into the top margin), so the bottom inset adds the same
+// 18mm to keep the content vertically centred in the red.
+#block(width: 100%, fill: cascade-red, outset: (x: 24mm, top: 18mm), inset: (x: 40pt, top: 2mm, bottom: 18mm + 2mm), below: 0pt)[
+  #grid(columns: (auto, auto, 1fr, auto), column-gutter: 50pt, align: horizon,
+    text(font: display, size: 100pt, weight: 700, tracking: -1pt, fill: white)[Glueball],
+    line(angle: 90deg, length: 100pt, stroke: 3pt + cascade-peach),
+    text(font: serif, size: 42pt, weight: 700, fill: white)[Agentic Generation and Verification of \ Hardware-Optimized Gluon Kernels],
+    image("latex-src/logos/cascade-logo-reversed.pdf", height: 120pt),
   )
 ]
-#block(width: 100%, fill: cascade-peach, outset: (x: 24mm), inset: (x: 40pt, y: 9pt), below: 0pt)[
-  #grid(columns: (1fr, auto), align: horizon,
-    text(font: sans, size: 24pt, weight: 700, fill: ink)[Computer Architecture and Semiconductor Design Centre],
-    text(font: sans, size: 24pt, fill: ink)[Glueball · ICLR 2027 submission])
+// peach strip (as in the CASCADE portrait header): the authors
+#block(width: 100%, fill: cascade-peach, outset: (x: 24mm), inset: (x: 40pt, y: 12pt), below: 0pt)[
+  #text(font: sans, size: 28pt, weight: 700, fill: ink)[Anonymous authors]
 ]
 #v(14pt)
 
@@ -99,7 +113,7 @@
     nd(sky, (2, 0), <pf>, [*Profile* \ #sub[ncu · Proton · probes]], w: 370pt, h: H),
     nd(sky, (3, 0), <pr>, [*Propose* \ #sub[ranked portfolio]], w: 270pt, h: H),
     nd(sky, (4, 0), <im>, [*Implement* \ #sub[targeted edits]], w: 270pt, h: H),
-    nd(mint, (5, 0), <vf>, [*Verify* \ #sub[tests + Z3 tools]], w: 270pt, h: H),
+    nd(ok, (5, 0), <vf>, [*Verify* \ #sub[tests + Z3 tools]], w: 270pt, h: H),
     nd(grey, (6, 0), <bm>, [*Benchmark* \ #sub[full model]], w: 250pt, h: H),
     edge(<tr>, <m>, "->"), edge(<m>, <pf>, "->"),
     edge(<pf>, <pr>, "->"), edge(<pr>, <im>, "->"), edge(<im>, <vf>, "->"), edge(<vf>, <bm>, "->"),
@@ -113,21 +127,21 @@
 
 #let fig-corr = {
   set par(justify: false); set text(font: serif, size: 31pt)
-  let HI = 60pt
-  let HM = 88pt
+  let HI = 66pt
+  let HM = 96pt
   diagram(
-    node-inset: 12pt, spacing: (100pt, 12pt), edge-stroke: 2.8pt + ink.lighten(30%), mark-scale: 85%,
-    nd(grey, (0, 0), <rt>, [Reference Triton], w: 340pt, h: HI),
-    nd(grey, (0, 1), <pt>, [PyTorch reference], w: 340pt, h: HI),
-    nd(sun, (0, 2), <pg>, [Previous Gluon], w: 340pt, h: HI),
+    node-inset: 12pt, spacing: (168pt, 12pt), edge-stroke: 2.8pt + ink.lighten(30%), mark-scale: 85%,
+    nd(grey, (0, 0), <rt>, [*Reference Triton*], w: 340pt, h: HI),
+    nd(grey, (0, 1), <pt>, [*PyTorch reference*], w: 340pt, h: HI),
+    nd(sun, (0, 2), <pg>, [*Previous Gluon*], w: 340pt, h: HI),
     nd(mint, (1, 1), <sa>, [*Split & align*], w: 310pt, h: HM),
     nd(mint, (2, 1), <eq>, [*Block-wise equivalence* \ #sub[LLM reasoning + Z3]], w: 400pt, h: HM),
     nd(mint, (3, 1), <vd>, [*Verdict*], w: 230pt, h: HM),
-    nd(mint, (4, 1), <rp>, [*Correctness report*], w: 340pt, h: HM),
+    nd(ok, (4, 1), <rp>, [*Correctness report*], w: 340pt, h: HM),
     nd(rose, (3, 3), <ce>, [*Counterexample* \ #sub[witness on real GPU]], w: 330pt, h: HM, dash: "dashed"),
     edge(<rt>, (0.5, 0), (0.5, 1), <sa>, "->"), edge(<pt>, <sa>, "->"), edge(<pg>, (0.5, 2), (0.5, 1), <sa>, "->"),
     edge(<sa>, <eq>, "->"), edge(<eq>, <vd>, "->"),
-    edge(<vd>, <rp>, "->", stroke: 2.8pt + mint.s, label: tag(mint, [correct]), label-side: left, label-sep: 12pt),
+    edge(<vd>, <rp>, "->", stroke: 2.8pt + ok.s, label: tag(ok, [correct]), label-side: left, label-sep: 12pt),
     edge(<vd>, <ce>, "->", stroke: 2.8pt + rose.s, label: tag(rose, [incorrect]), label-side: left, label-sep: 14pt),
     edge(<ce>, (1, 3), <sa>, "-->", stroke: 2.8pt + rose.s),
     node((2, 3), tag(rose, [does not reproduce → retry]), stroke: none, fill: white, inset: 8pt),
@@ -150,22 +164,22 @@
     let best = calc.max(..vals, base)
     rows.push(table.cell(align: left + horizon, text(size: 24pt, weight: 700, e.name)))
     rows.push(table.cell(text(font: sans, size: 21pt, fill: muted, kind.at(k))))
-    rows.push(table.cell(fill: if base == best { sun.f.lighten(35%) } else { grey.f },
-      text(size: 27pt, weight: if base == best { 700 } else { 400 }, fill: if base >= 1 { mint.d } else { rose.d }, astra.at(k) + "×")))
+    rows.push(table.cell(fill: if base == best { ok.f },
+      text(size: 27pt, weight: if base == best { 700 } else { 400 }, fill: if base >= 1 { ok.d } else { cascade-red }, astra.at(k) + "×")))
     for m in e.models {
       let top = m.median == best
-      rows.push(table.cell(fill: if top { sun.f.lighten(35%) },
-        text(size: 27pt, weight: if top { 700 } else { 400 }, fill: if m.median >= 1 { mint.d } else { rose.d }, m.label + "×")))
+      rows.push(table.cell(fill: if top { ok.f },
+        text(size: 27pt, weight: if top { 700 } else { 400 }, fill: if m.median >= 1 { ok.d } else { cascade-red }, m.label + "×")))
     }
   }
   table(columns: (3.1fr, 0.7fr, 1.15fr, 1.05fr, 1.05fr, 1.45fr, 0.95fr), rows: (66pt, ROW), align: center + horizon, stroke: none, inset: (x: 8pt, y: 6pt),
-    fill: (_, y) => if y > 0 and calc.odd(y) { stripe-warm },
-    th(sun, align: left)[Workload], th(sun)[Type], table.cell(fill: grey.f, th(grey)[Astra + CODEX]), ..agents.map(n => th(sun, n)),
-    table.hline(stroke: 2pt + sun.s),
+    fill: (_, y) => if y > 0 and calc.odd(y) { stripe },
+    th(mint, align: left)[Workload], th(mint)[Type], th(mint)[Astra + CODEX], ..agents.map(n => th(mint, n)),
+    table.hline(stroke: 2pt + mint.s),
     ..rows)
 }
 
-#let pos(b) = text(fill: mint.d, weight: 700, b)
+#let pos(b) = text(fill: ok.d, weight: 700, b)
 #let fig-bugs = table(columns: (3.3fr, 1.1fr, 1fr, 1fr, 1fr, 1.1fr, 1fr, 1fr, 1fr), rows: (36pt, 46pt, ROW),
   align: (left + horizon, center + horizon), stroke: none, inset: (x: 8pt, y: 6pt),
   fill: (_, y) => if y > 1 and calc.even(y) { stripe },
@@ -178,21 +192,26 @@
   text(size: 24pt)[Meta Muse Spark 1.3], [22], pos[+2], [0], [0], [9], [0], [3], pos[−3],
   text(size: 24pt)[GPT 5.6 Sol], [21], pos[+2], [0], [0], [9], pos[+1], [1], pos[−1])
 
+// both diagrams are drawn at the same scale (that of the wider system diagram), so text and boxes match
+#let same-scale(body) = layout(size => {
+  let k = calc.min(1.0, size.width / measure(fig-arch).width, size.width / measure(body).width)
+  align(center, scale(k * 100%, reflow: true, body))
+})
 #card("1", "System: optimize, verify, benchmark", sky)[
-  #fig(fit(fig-arch))
+  #same-scale(fig-arch)
 ]
-#v(10pt)
+#v(16pt)
 #card("2", "Correctness pipeline: LLM reasoning with Z3 evidence", mint)[
-  #fig(fit(fig-corr))
+  #same-scale(fig-corr)
 ]
-#v(10pt)
+#v(16pt)
 #pair(
   x => card("3", "Whole-model speedups over Triton", sun)[#fig(fig-speed)#v(x)],
   x => card("4", "Verification finds more bugs", mint)[#fig(fig-bugs)#v(x)],
 )
-#v(10pt)
+#v(16pt)
 #let arm-names = ("Both tools", "Z3 library only", "Symbolic exec. only", "Neither (raw model)")
-#let arm-col = (mint, sky, lav, rose)
+#let arm-col = (ok, mint, amber, charcoal)
 #let abl-bar(val, mx, pal) = stack(dir: ltr, spacing: 8pt,
   box(width: val * 10pt, height: 22pt, radius: 3pt, fill: pal.s),
   text(size: 24pt, weight: 700, fill: pal.d)[#val M])
@@ -205,7 +224,7 @@
   text(size: 25pt)[Both tools], pos[28], pos[0.93 M], pos[0], pos[3.63 M], [47.6],
   text(size: 25pt)[Z3 library only], pos[28], [1.21 M], pos[0], pos[3.52 M], pos[43.6],
   text(size: 25pt)[Symbolic exec. only], [27], [1.40 M], pos[0], [4.29 M], [50.9],
-  text(size: 25pt)[Neither (raw model)], [27], [1.52 M], text(fill: rose.d, weight: 700)[7], [4.44 M], [71.2])
+  text(size: 25pt)[Neither (raw model)], [27], [1.52 M], text(fill: cascade-red, weight: 700)[7], [4.44 M], [71.2])
 #let defects = (("cpasync_barrier", (0.42, 0.62, 1.47, 1.75)), ("arrive_before_fence", (1.24, 0.90, 3.19, 3.69)), ("missing_fence", (1.77, 2.05, 2.68, 3.33)))
 #let fig-defects = table(columns: (2.3fr, 1fr, 1fr, 1fr, 1fr), rows: (40pt, ROW), align: (left + horizon, left + horizon),
   stroke: none, inset: (x: 8pt, y: 6pt), fill: (_, y) => if y > 0 and calc.odd(y) { stripe },
@@ -288,67 +307,46 @@ witness: [iter_p = 2, lag = 2]
     grid(columns: fr.map(f => f * 1fr), column-gutter: 26pt, ..case-cols(hm))
   })
 ]
-#v(6pt)
+#v(16pt)
 
 // ═════════════ TWO COLUMNS: the two halves of the correctness system ═════════════
-#let tag-chip(pal, t) = box(fill: pal.f, stroke: 1.5pt + pal.s, radius: 5pt, inset: (x: 10pt, y: 3pt),
-  text(font: sans, size: 20pt, weight: 600, fill: pal.d, t))
-#let mono-t(t) = text(font: mono, size: 22pt, t)
-
-#let ttir-map = table(columns: (1.45fr, 2.1fr, 1.1fr), rows: 44pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 4pt),
-  fill: (_, y) => if y > 0 and calc.odd(y) { stripe },
-  th(mint)[TTIR op], th(mint)[Z3 term], th(mint)[Kind],
-  table.hline(stroke: 2pt + mint.s),
-  mono-t("tt.load"), mono-t("load_row"), tag-chip(rose, "fresh symbol"),
-  mono-t("tt.reduce (max)"), mono-t("maxnumf_row_minus_max"), tag-chip(rose, "fresh symbol"),
-  mono-t("arith.subf"), mono-t("load_row − maxnumf_…"), tag-chip(mint, "fpSub"),
-  mono-t("math.exp"), mono-t("exp(load_row − …)"), tag-chip(sun, "uninterpreted fn"),
-  mono-t("tt.reduce (sum)"), mono-t("addf_denominator"), tag-chip(rose, "fresh symbol"),
-  mono-t("arith.divf"), mono-t("exp(…) / addf_denominator"), tag-chip(mint, "fpDiv"))
-
-#let dialects = table(columns: (0.7fr, 0.5fr, 3.2fr), rows: 44pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 4pt),
-  fill: (_, y) => if y > 0 and calc.odd(y) { stripe },
-  th(mint)[Dialect], th(mint)[Ops], th(mint)[How it is modeled],
-  table.hline(stroke: 2pt + mint.s),
-  mono-t("arith"), [51], text(size: 25pt)[native Z3 bit-vector / floating-point operators],
-  mono-t("math"), [46], text(size: 25pt)[simple ops native; exp, log, sin … uninterpreted],
-  mono-t("tt"), [52], text(size: 25pt)[reshapes alias; pointer math exact; load, reduce, dot opaque],
-  mono-t("scf"), [12], text(size: 25pt)[if exact; for runs once; while opaque],
-  mono-t("ttg"), [27], text(size: 25pt)[same interpreter on TTGIR; default warp partition only])
+// Compact representations (no tables): op chips colour-coded by how they are modelled, and the axiom/theorem names.
+#let op-chip(pal, t) = box(fill: pal.f, stroke: 1.8pt + pal.s, radius: 6pt, inset: (x: 8pt, y: 7pt), baseline: 30%,
+  text(font: mono, size: 17.5pt, fill: pal.d, t))
+#let name-chip(pal, t) = box(fill: pal.f, stroke: 1.8pt + pal.s, radius: 6pt, inset: (x: 14pt, y: 7pt), baseline: 30%,
+  text(font: sans, size: 22pt, weight: 700, fill: pal.d, t))
+#let chip-row(label, chips) = grid(columns: (124pt, 1fr), column-gutter: 8pt, align: (left + top, left),
+  text(font: sans, size: 21pt, weight: 700, fill: muted, upper(label)),
+  par(leading: 1.05em, chips.join(h(8pt))))
+#let legend(pal, t) = box[#box(width: 18pt, height: 18pt, radius: 4pt, fill: pal.f, stroke: 1.8pt + pal.s, baseline: 15%) #h(6pt)#text(size: 21pt, fill: muted, t)]
 
 #let card6(x) = [
   #card("7", "Symbolic execution: a Z3 model of TTIR", mint)[
-    Each MLIR op becomes a Z3 term; ops the model cannot capture become *fresh opaque symbols* that split the kernel into *symbolic regions*.
-    #v(6pt)
-    #fig(ttir-map)
+    Each MLIR op becomes a Z3 term; ops the model cannot capture become *fresh opaque symbols* that split the kernel into *symbolic regions*. Softmax:
+    #v(4pt)
+    #chip-row("TTIR ops", (op-chip(rose, "tt.load"), op-chip(rose, "tt.reduce max"), op-chip(ok, "arith.subf"),
+      op-chip(amber, "math.exp"), op-chip(rose, "tt.reduce sum"), op-chip(ok, "arith.divf")))
+    #v(4pt)
+    #chip-row("Z3 term", (text(font: mono, size: 23pt)[out = exp(load_row − max_row) / denominator],))
+    #v(8pt)
+    #legend(rose, [fresh opaque symbol]) #h(24pt) #legend(ok, [native Z3 FP op]) #h(24pt) #legend(amber, [uninterpreted fn])
     #v(x)
   ]
 ]
 
-#let ax-row(n, d, pal: mint) = (table.cell(text(font: sans, weight: 700, size: 22pt, fill: pal.d, n)), text(size: 25pt, d))
 #let card7(x) = [
   #card("8", "The Gluon-to-Z3 library", mint)[
     Hardware actions become *events* ordered by _happens-before_. Each *theorem* asks Z3 to satisfy the *negation* of a property: *UNSAT* proves it, *SAT* gives a counterexample.
-    #v(6pt)
-    #fig(table(columns: (1.15fr, 2.5fr), rows: 38pt, align: left + horizon, stroke: none, inset: (x: 10pt, y: 3pt),
-      fill: (_, y) => if y > 6 and calc.odd(y) { lav.f.lighten(55%) } else if y > 0 and y < 6 and calc.odd(y) { stripe },
-      th(mint, colspan: 2, align: left)[Axioms: hardware ordering rules],
-      ..ax-row("Sequential consistency", "events form an acyclic timeline"),
-      ..ax-row("CTA barrier", "gl.barrier(): before ⇒ after, all threads"),
-      ..ax-row("Async-proxy fence", "orders generic writes before TMA / MMA reads"),
-      ..ax-row("Mbarrier sync", "arrival and byte accounting; short ⇒ deadlock"),
-      ..ax-row("Manual ordering", "assert or deny a happens-before edge"),
-      th(lav, colspan: 2, align: left)[Theorems: safety properties],
-      ..ax-row("Async race freedom", "no unordered access pair with a write", pal: lav),
-      ..ax-row("Bank-conflict freedom", "same-warp threads hit distinct banks", pal: lav),
-      ..ax-row("Global coalescing", "warp accesses fit one aligned cache line", pal: lav),
-    ))
+    #v(4pt)
+    #chip-row("Axioms", ("Sequential consistency", "CTA barrier", "Async-proxy fence", "Mbarrier sync", "Manual ordering").map(t => name-chip(mint, t)))
+    #v(4pt)
+    #chip-row("Theorems", ("Async race freedom", "Bank-conflict freedom", "Global coalescing").map(t => name-chip(ok, t)))
     #v(x)
   ]
 ]
 
 #pair(card6, card7, gutter: 40pt)
-#v(10pt)
+#v(16pt)
 #card("9", "Future directions", lav)[
   #grid(columns: (1fr, 1fr, 1fr), column-gutter: 48pt,
     [*Multi-GPU and heterogeneous targets.* Extend generation and verification to distributed kernels (ParallelKernelBench) and other accelerators, with proof obligations for collective ordering and distributed races.],
