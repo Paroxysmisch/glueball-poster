@@ -3,7 +3,7 @@
 // CASCADE poster theme (cascade-beamer-poster/beamerthemeCascade.sty).
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
 #import "@preview/showybox:2.0.4": showybox
-#import "@preview/tiaoma:0.3.0": qrcode
+#import "@preview/zebra:0.1.0": qrcode
 
 // ───────────── palette: CASCADE (www.cl.cam.ac.uk/research/cascade) ─────────────
 #let cascade-red = rgb("#DD3025")
@@ -33,7 +33,7 @@
 
 // ───────────── page & text ─────────────
 #let footer-h = 58mm
-#let qr-url = "https://www.cl.cam.ac.uk/research/cascade/"   // placeholder: swap for the paper / code link
+#let qr-url = "https://openreview.net/pdf?id=4Lpg8unVZd"
 #set page(width: 841mm, height: 1189mm, fill: paper,
   margin: (x: 24mm, top: 18mm, bottom: footer-h + 12mm),
   background: place(bottom, rect(width: 100%, height: footer-h, fill: cascade-red)),
@@ -43,7 +43,7 @@
       stack(spacing: 14pt,
         text(font: "Nimbus Sans", size: 30pt, weight: 700, fill: white)[Computer Architecture and Semiconductor Design Centre],
         text(font: "Nimbus Sans", size: 24pt, fill: cascade-peach)[Department of Computer Science and Technology, University of Cambridge]),
-      box(fill: white, radius: 8pt, inset: 12pt, qrcode(qr-url, width: 36mm)),
+      box(fill: white, radius: 8pt, inset: 6pt, qrcode(qr-url, width: 38mm, quiet-zone: 2, background-fill: white)),
     ))))
 #set text(font: body-font, size: 25.5pt, fill: ink, lang: "en", hyphenate: false, weight: 400)
 #set par(justify: false, leading: 0.72em, spacing: 1.1em)
@@ -86,19 +86,19 @@
 #let tag(pal, t) = text(font: serif, size: 28pt, style: "italic", weight: 600, fill: pal.d, t)
 
 // ═════════════ HEADER ═════════════
-// The banner's red starts 18mm above the text area (outset into the top margin), so the bottom inset adds the same
-// 18mm to keep the content vertically centred in the red.
-#block(width: 100%, fill: cascade-red, outset: (x: 24mm, top: 18mm), inset: (x: 40pt, top: 2mm, bottom: 18mm + 2mm), below: 0pt)[
-  #grid(columns: (auto, auto, 1fr, auto), column-gutter: 50pt, align: horizon,
+// One red banner holding the title row and the authors; the CASCADE logo spans both rows. The red starts 18mm above
+// the text area (outset into the top margin), so the bottom inset adds the same 18mm to keep the content centred.
+#let authors = "Yash Shah, Mantas Baksys, Sean B. Holden, Timothy M. Jones"
+#block(width: 100%, fill: cascade-red, outset: (x: 24mm, top: 18mm), inset: (x: 40pt, top: 4mm, bottom: 18mm + 4mm), below: 0pt)[
+  #grid(columns: (auto, auto, 1fr, auto), column-gutter: 50pt, row-gutter: 20pt, align: horizon,
     text(font: display, size: 100pt, weight: 700, tracking: -1pt, fill: white)[Glueball],
     line(angle: 90deg, length: 100pt, stroke: 3pt + cascade-peach),
     text(font: serif, size: 42pt, weight: 700, fill: white)[Agentic Generation and Verification of \ Hardware-Optimized Gluon Kernels],
-    image("latex-src/logos/cascade-logo-reversed.pdf", height: 120pt),
+    grid.cell(rowspan: 2, align: right + horizon, image("latex-src/logos/cascade-logo-reversed.pdf", height: 200pt)),
+    grid.cell(colspan: 3, align: left + horizon,
+      box(fill: cascade-peach, radius: 10pt, inset: (x: 26pt, y: 14pt),
+        text(font: sans, size: 30pt, weight: 700, fill: ink, authors))),
   )
-]
-// peach strip (as in the CASCADE portrait header): the authors
-#block(width: 100%, fill: cascade-peach, outset: (x: 24mm), inset: (x: 40pt, y: 12pt), below: 0pt)[
-  #text(font: sans, size: 28pt, weight: 700, fill: ink)[Anonymous authors]
 ]
 #v(14pt)
 
@@ -200,16 +200,16 @@
 #card("1", "System: optimize, verify, benchmark", sky)[
   #same-scale(fig-arch)
 ]
-#v(16pt)
+#v(14pt)
 #card("2", "Correctness pipeline: LLM reasoning with Z3 evidence", mint)[
   #same-scale(fig-corr)
 ]
-#v(16pt)
+#v(14pt)
 #pair(
   x => card("3", "Whole-model speedups over Triton", sun)[#fig(fig-speed)#v(x)],
   x => card("4", "Verification finds more bugs", mint)[#fig(fig-bugs)#v(x)],
 )
-#v(16pt)
+#v(14pt)
 #let arm-names = ("Both tools", "Z3 library only", "Symbolic exec. only", "Neither (raw model)")
 #let arm-col = (ok, mint, amber, charcoal)
 #let abl-bar(val, mx, pal) = stack(dir: ltr, spacing: 8pt,
@@ -307,7 +307,7 @@ witness: [iter_p = 2, lag = 2]
     grid(columns: fr.map(f => f * 1fr), column-gutter: 26pt, ..case-cols(hm))
   })
 ]
-#v(16pt)
+#v(14pt)
 
 // ═════════════ TWO COLUMNS: the two halves of the correctness system ═════════════
 // Compact representations (no tables): op chips colour-coded by how they are modelled, and the axiom/theorem names.
@@ -346,7 +346,7 @@ witness: [iter_p = 2, lag = 2]
 ]
 
 #pair(card6, card7, gutter: 40pt)
-#v(16pt)
+#v(14pt)
 #card("9", "Future directions", lav)[
   #grid(columns: (1fr, 1fr, 1fr), column-gutter: 48pt,
     [*Multi-GPU and heterogeneous targets.* Extend generation and verification to distributed kernels (ParallelKernelBench) and other accelerators, with proof obligations for collective ordering and distributed races.],
