@@ -91,6 +91,8 @@
 \newcommand{\qrurl}[1]{\renewcommand{\cascade@url}{#1}}
 \newcommand{\supporters}[1]{\renewcommand{\cascade@supporters}{#1}}
 \newcommand{\takeaway}[1]{\renewcommand{\cascade@takeaway}{#1}}
+\newcommand{\cascade@tagline}{}\newcommand{\tagline}[1]{\renewcommand{\cascade@tagline}{#1}}
+\newcommand{\cascade@panelextra}{}\newcommand{\panelextra}[1]{\renewcommand{\cascade@panelextra}{#1}}
 
 % Numbered "chip" used in section headings
 \newcounter{cascadeblock}
@@ -171,7 +173,8 @@
       \node[anchor=north west,inner sep=0]
         at ($(current page.north west)+(3cm,-14cm)$) {\begin{minipage}[t]{\dimexpr\cascadepanelwidth-6cm\relax}%
           \raggedright\hyphenpenalty=10000
-          {\usebeamerfont{title}\color{white}\raggedright\inserttitle\par}\vskip1.2em
+          {\usebeamerfont{title}\color{white}\raggedright\inserttitle\par}\vskip0.5em
+          {\LARGE\bfseries\color{white}\raggedright\cascade@tagline\par}\vskip1.4em
           {\usebeamerfont{author}\color{cascadepeach}\insertauthor\par}\vskip0.6em
           {\usebeamerfont{institute}\color{white}\insertinstitute\par}\vskip2.5em
           \ifx\cascade@takeaway\@empty\else
@@ -179,13 +182,9 @@
             left=1.2em,right=1.2em,top=1.4em,bottom=1.4em]
             {\small\color{cascadepeach}IN ONE SENTENCE}\par\vskip0.3em
             {\Large\bfseries\color{white}\raggedright\cascade@takeaway\par}
-          \end{tcolorbox}\fi\end{minipage}};
+          \end{tcolorbox}\fi\vskip2em\cascade@panelextra\end{minipage}};
       \node[anchor=south west,inner sep=0] (ucam) at ($(current page.south west)+(3cm,3cm)$)
         {\includegraphics[width=0.5\cascadepanelwidth]{\ucamlogopath}};
-      \node[anchor=south west,inner sep=0]
-        at ($(ucam.north west)+(0,2cm)$)
-        {\begin{minipage}[b]{0.55\cascadepanelwidth}\raggedright
-          {\color{cascadepeach}\small\cascade@event\par}\vskip0.3em{\color{white}\footnotesize\cascade@contact\par}\end{minipage}};
       \node[anchor=south east,fill=white,inner sep=0.6cm,rounded corners=0.3cm]
         at ($(current page.south west)+(\cascadepanelwidth,0)+(-3cm,3cm)$)
         {\qrcode[height=6cm,nolink]{\cascade@url}};

@@ -1,16 +1,20 @@
 % Glueball A0 landscape poster, built on the CASCADE Beamer theme.
 % Build:  latexmk -pdf glueball-poster.tex
 \documentclass[final]{beamer}
-\usepackage[size=a0,orientation=landscape,scale=0.93]{beamerposter}
+\usepackage[size=a0,orientation=landscape,scale=0.72]{beamerposter}
 \usetheme[panel]{Cascade}
 \setbeamerfont{block title}{size=\large}
 \newlength{\cascadeh}\setlength{\cascadeh}{0pt}
-\newlength{\cascadegap}\setlength{\cascadegap}{1.2cm}
+\newlength{\cascadegap}\setlength{\cascadegap}{1.0cm}
+\def\cascadevalign{top}
 \setbeamertemplate{block begin}{%
   \stepcounter{cascadeblock}%
+  \ifdim\cascadeh>0pt\tcbset{height=\cascadeh}\else\tcbset{height from={0pt} to {80cm}}\fi
   \begin{tcolorbox}[enhanced,colback=cascadepeach,colframe=cascadepeach,arc=0.6em,boxrule=0pt,
-    left=1.4em,right=1.4em,top=1.4em,bottom=1.4em,height from={\cascadeh} to {80cm}]
-  {\usebeamerfont{block title}\cascadechip{\arabic{cascadeblock}}\hspace{0.5em}\insertblocktitle}\par\vskip1.0em}
+    left=1.4em,right=1.4em,top=1.4em,bottom=1.4em,valign=\cascadevalign,
+    coltitle=cascadetext,colbacktitle=cascadepeach,fonttitle=\usebeamerfont{block title},
+    lefttitle=1.4em,toptitle=1.4em,bottomtitle=1.1em,
+    title={\cascadechip{\arabic{cascadeblock}}\hspace{0.5em}\insertblocktitle}]}
 \setbeamertemplate{block end}{\end{tcolorbox}}
 \usepackage{booktabs,array,listings,multirow,colortbl}
 \usetikzlibrary{arrows.meta,positioning,calc,fit}
@@ -38,7 +42,7 @@
 
 % ---- unified table style: red header, alternating peach rows, thin red rule
 \newcommand{\hd}[1]{\textcolor{white}{\bfseries #1}}
-\newcommand{\tablestyle}[1]{\renewcommand{\arraystretch}{1.45}\setlength{\tabcolsep}{9pt}%
+\newcommand{\tablestyle}[1]{\renewcommand{\arraystretch}{1.3}\setlength{\tabcolsep}{9pt}%
   \rowcolors{#1}{white}{cascadepeach!45}\arrayrulecolor{white}}
 
 \tikzset{
@@ -52,80 +56,79 @@
 }
 
 \title{Glueball}
-\author{Anonymous authors}
-\institute{Agentic Generation and Verification of Hardware-Optimized Gluon Kernels\\[0.5em]ICLR 2027 submission}
-\event{Glueball \textperiodcentered{} LLM agents \textperiodcentered{} Gluon \textperiodcentered{} Z3}
-\contact{anonymous}
+\author{Yash Shah, Mantas Baksys,\\Sean B.\ Holden, Timothy M.\ Jones}
+\institute{ICLR 2027 submission}
+\tagline{Agentic Generation and Verification of Hardware-Optimized Gluon Kernels}
 \qrurl{https://www.cl.cam.ac.uk/research/cascade/}
 \takeaway{Theorem-proving tools help LLM agents find more kernel bugs, with fewer false positives and fewer tokens.}
 
-\begin{document}
-\begin{frame}[t,fragile]
-\begin{columns}[t,totalwidth=\linewidth]
-
-\begin{column}{0.315\linewidth}
-\begin{minipage}[t][0.935\textheight][t]{\linewidth}
-  \setlength{\cascadeh}{538pt}
-  \begin{block}{Motivation and contributions}
-    Tests cover little of the execution space, so agents can \alert{overfit to tested inputs} and miss races and barrier bugs in asynchronous Hopper/Blackwell kernels.
-    \begin{itemize}
+\panelextra{%
+  \begin{tcolorbox}[enhanced,colback=cascadepeach,colframe=cascadepeach,boxrule=0pt,arc=0.6em,
+    left=1.4em,right=1.4em,top=1.4em,bottom=1.4em,fontupper=\large\color{cascadetext}]
+    {\Large\bfseries\color{cascadered}Motivation and contributions}\par\vskip0.6em
+    Tests cover little of the execution space, so agents can \textcolor{cascadered}{overfit to tested inputs} and miss races and barrier bugs in asynchronous Hopper/Blackwell kernels.
+    \begin{itemize}\setlength{\itemsep}{0.3em}
       \item \textbf{Glueball} is the first system to equip LLM agents with \textbf{theorem-proving tools} during GPU kernel generation.
       \item It targets \textbf{Gluon}, Triton's tile-level DSL with explicit layouts and warp roles, whose structure suits formal reasoning.
       \item Agents get profilers, debuggers and compilers, Z3 via our Gluon-to-Z3 library, and are judged on whole models.
     \end{itemize}
-  \end{block}
-  \vskip\cascadegap
-  \setlength{\cascadeh}{596pt}
+  \end{tcolorbox}
+  \vskip1.5em
+  \begin{tcolorbox}[enhanced,colback=cascadepeach,colframe=cascadepeach,boxrule=0pt,arc=0.6em,
+    left=1.4em,right=1.4em,top=1.4em,bottom=1.4em,fontupper=\large\color{cascadetext}]
+    {\Large\bfseries\color{cascadered}Future directions}\par\vskip0.6em
+    \begin{itemize}\setlength{\itemsep}{0.3em}
+      \item \textbf{Multi-GPU and heterogeneous targets.} Distributed kernels (ParallelKernelBench) and other accelerators, with proof obligations for collective ordering and distributed races.
+      \item \textbf{Constraint- and statistics-guided search.} Prune pipelining schedule families before codegen; use past feedback to cut costly LLM iterations.
+      \item \textbf{Verification across the compilation stack.} Further formal tools, such as a formal PTX model, to verify at several levels (Gluon, TTGIR, PTX).
+    \end{itemize}
+  \end{tcolorbox}}
+
+\begin{document}
+\begin{frame}[t,fragile]
+\setlength{\cascadeh}{0pt}
+  \def\cascadevalign{center}
   \begin{block}{System: optimize, verify, benchmark}
-    \vfill
     \centering
-    \resizebox{\linewidth}{!}{\begin{tikzpicture}[node distance=1.1cm]
+    \resizebox{0.72\linewidth}{!}{\begin{tikzpicture}[node distance=1.2cm]
       \node[tr] (a) {\textbf{AST translation}\\[-2pt]\small\itshape Triton $\to$ Gluon};
       \node[tr,fill=cascadepeach!60,right=of a] (m) {\textbf{Gluon model}};
       \node[nd,fill=blue!6,right=of m] (p) {\textbf{Profile}\\[-2pt]\small\itshape ncu, Proton, probes};
       \node[nd,fill=blue!6,right=of p] (q) {\textbf{Propose}\\[-2pt]\small\itshape ranked portfolio};
-      \node[nd,fill=blue!6,below=3.2cm of a] (i) {\textbf{Implement}\\[-2pt]\small\itshape targeted edits};
+      \node[nd,fill=blue!6,right=of q] (i) {\textbf{Implement}\\[-2pt]\small\itshape targeted edits};
       \node[ok,right=of i] (v) {\textbf{Verify}\\[-2pt]\small\itshape tests + Z3 tools};
       \node[nd,right=of v] (b) {\textbf{Benchmark}\\[-2pt]\small\itshape full model};
-      \foreach \x/\y in {a/m,m/p,p/q,i/v,v/b} \draw[ar] (\x) -- (\y);
-      \draw[ar] (q.south) -- ++(0,-1.6) -| ($(i.north)$);
-      \draw[rj] (v.south) -- ++(0,-1.2) -| (i.south) node[pos=0.25,below]{\small\itshape reject: retry with feedback};
-      \coordinate (X) at ($(q.east)+(1,0)$);
-      \coordinate (Y) at ($(m.north)+(0,1.4)$);
-      \draw[ar,draw=cascadered] (b.east) -| (X) |- (Y) -- (m.north) node[pos=0.1,above]{\small\itshape repeat until max.\ rounds};
+      \foreach \x/\y in {a/m,m/p,p/q,q/i,i/v,v/b} \draw[ar] (\x) -- (\y);
+      \draw[rj] (v.south) -- ++(0,-1.4) -| (i.south) node[pos=0.25,below]{\small\itshape reject: retry with feedback};
+      \draw[ar,draw=cascadered] (b.north) -- ++(0,1.6) -| (m.north) node[pos=0.25,above]{\small\itshape repeat until max.\ rounds};
     \end{tikzpicture}}
-  
-    \vfill
   \end{block}
-  \vskip\cascadegap
-  \setlength{\cascadeh}{849pt}
+\vskip\cascadegap
+  \def\cascadevalign{center}
   \begin{block}{Correctness pipeline}
-    \vfill
     \centering
-    \resizebox{\linewidth}{!}{\begin{tikzpicture}[node distance=1.3cm]
-      \node[nd,fill=cascadelightgrey!15] (py) {PyTorch reference};
-      \node[nd,fill=cascadelightgrey!15,left=0.8cm of py] (t) {Reference Triton};
-      \node[tr,right=0.8cm of py] (g) {Previous Gluon};
-      \node[ok,below=1.8cm of py] (s) {\textbf{Split \& align}};
-      \node[ok,below=of s] (e) {\textbf{Block-wise equivalence}\\[-2pt]\small\itshape LLM reasoning + Z3};
-      \node[ok,below=of e] (d) {\textbf{Verdict}};
-      \node[ok,below=1.6cm of d] (r) {\textbf{Correctness report}};
-      \node[bd,right=3.6cm of d] (c) {\textbf{Counterexample}\\[-2pt]\small\itshape witness on real GPU};
-      \foreach \x in {t,py,g} \draw[ar] (\x.south) -- ++(0,-0.5) -| (s.north);
+    \resizebox{0.68\linewidth}{!}{\begin{tikzpicture}[node distance=1.2cm]
+      \node[nd,fill=cascadelightgrey!15,minimum height=2.2cm] (t) {Reference Triton};
+      \node[nd,fill=cascadelightgrey!15,minimum height=2.2cm,below=2mm of t] (py) {PyTorch reference};
+      \node[tr,minimum height=2.2cm,below=2mm of py] (g) {Previous Gluon};
+      \node[ok,right=2.4cm of py] (s) {\textbf{Split \& align}};
+      \node[ok,right=of s] (e) {\textbf{Block-wise equivalence}\\[-2pt]\small\itshape LLM reasoning + Z3};
+      \node[ok,right=of e] (d) {\textbf{Verdict}};
+      \node[ok,right=2.4cm of d] (r) {\textbf{Correctness report}};
+      \node[bd,below=1.1cm of d] (c) {\textbf{Counterexample}\\[-2pt]\small\itshape witness on real GPU};
+      \foreach \x in {t,py,g} \draw[ar] (\x.east) -- ++(0.6,0) |- (s.west);
       \draw[ar] (s) -- (e); \draw[ar] (e) -- (d);
-      \draw[ar,draw=okgreen] (d) -- (r) node[midway,right]{\small\itshape correct};
-      \draw[rj] (d) -- (c) node[midway,above]{\small\itshape incorrect};
-      \draw[rj] (c.north) -- ++(0,0) |- (s.east) node[pos=0.8,above,xshift=1.2cm]{\small\itshape retry};
+      \draw[ar,draw=okgreen] (d) -- (r) node[midway,above]{\small\itshape correct};
+      \draw[rj] (d) -- (c) node[midway,right]{\small\itshape incorrect};
+      \draw[rj] (c.west) -| (s.south) node[pos=0.25,above]{\small\itshape does not reproduce $\to$ retry};
     \end{tikzpicture}}
-  
-    \vfill
   \end{block}
-\end{minipage}
-\end{column}
-
+\vskip\cascadegap
+\begin{columns}[t,totalwidth=\linewidth]
 \begin{column}{0.315\linewidth}
-\begin{minipage}[t][0.935\textheight][t]{\linewidth}
-  \setlength{\cascadeh}{0pt}
+\begin{minipage}[t][1184pt][t]{\linewidth}
+  \setlength{\cascadeh}{490pt}
+  \def\cascadevalign{top}
   \begin{block}{Symbolic execution: TTIR to Z3}
     Each MLIR op becomes a Z3 term; ops the model cannot capture become \alert{fresh opaque symbols} that split the kernel into \alert{symbolic regions}. Softmax example:
     \vskip0.6em
@@ -142,7 +145,8 @@
     \end{tabular}}
   \end{block}
   \vskip\cascadegap
-  \setlength{\cascadeh}{0pt}
+  \setlength{\cascadeh}{597pt}
+  \def\cascadevalign{top}
   \begin{block}{The Gluon-to-Z3 library}
     Hardware actions become \alert{events} ordered by \emph{happens-before}. Each \emph{theorem} asks Z3 to satisfy the \alert{negation} of a property: \textbf{UNSAT} proves it, \textbf{SAT} gives a counterexample.
     \vskip0.6em
@@ -161,8 +165,59 @@
       \arrayrulecolor{cascadered}\bottomrule
     \end{tabular}}
   \end{block}
+\end{minipage}
+\end{column}
+\begin{column}{0.315\linewidth}
+\begin{minipage}[t][1184pt][t]{\linewidth}
+  \setlength{\cascadeh}{474pt}
+  \def\cascadevalign{center}
+  \begin{block}{Whole-model speedups}
+    \centering\small
+    \resizebox{\linewidth}{!}{\tablestyle{2}\begin{tabular}{llccccc}
+      \rowcolor{cascadered}\rule[-2.2ex]{0pt}{6.4ex}\hd{Workload} & \hd{Type} & \hd{\shortstack[c]{Astra\\+CODEX}} & \hd{\shortstack[c]{DeepSeek\\V4 Pro}} & \hd{\shortstack[c]{DeepSeek\\V4 Flash}} & \hd{\shortstack[c]{Meta Muse\\Spark 1.3}} & \hd{\shortstack[c]{GPT\\5.6 Sol}}\\
+      GPT-OSS & Model & \best{\good{1.13$\times$}} & \good{1.067$\times$} & \poor{0.891$\times$} & \poor{0.914$\times$} & \poor{0.921$\times$}\\
+      Qwen-3.5 MoE & Model & \poor{0.99$\times$} & \good{1.066$\times$} & \best{\good{1.075$\times$}} & \poor{0.997$\times$} & \poor{0.851$\times$}\\
+      Mamba-2 & Model & \best{\good{1.00$\times$}} & \poor{0.990$\times$} & \poor{0.958$\times$} & \poor{0.957$\times$} & \poor{0.958$\times$}\\
+      Cross-Entropy & Kernel & \good{1.02$\times$} & \good{1.550$\times$} & \poor{0.980$\times$} & \poor{0.820$\times$} & \best{\good{1.669$\times$}}\\
+      Llama-4 RoPE & Kernel & \best{\good{1.10$\times$}} & \good{1.073$\times$} & \good{1.069$\times$} & \good{1.011$\times$} & \good{1.047$\times$}\\
+      Neighborhood Att. & Kernel & \good{4.69$\times$} & \good{23.077$\times$} & \best{\good{24.851$\times$}} & \good{24.529$\times$} & \good{24.521$\times$}\\
+      \arrayrulecolor{cascadered}\bottomrule
+    \end{tabular}}
+    \par\vskip0.4em{\footnotesize\color{cascadegrey}Median best-round speedup (GB10, 6 rounds); shaded = best.}
+  
+  \end{block}
   \vskip\cascadegap
-  \setlength{\cascadeh}{909pt}
+  \setlength{\cascadeh}{616pt}
+  \def\cascadevalign{center}
+  \begin{block}{Ablation: what do the tools buy?}
+    \centering\small
+    \resizebox{\linewidth}{!}{\tablestyle{3}\begin{tabular}{lccccc}
+      \rowcolor{cascadered} & \multicolumn{2}{c}{\hd{Bug detection}} & \multicolumn{3}{c}{\hd{Bug-free code}}\\
+      \cmidrule(lr){2-3}\cmidrule(lr){4-6}
+      \rowcolor{cascadered}\hd{Test arm} & \hd{Found/30} & \hd{Tokens} & \hd{FP/21} & \hd{Tokens} & \hd{Tool calls}\\
+      Both tools & \good{28} & \good{0.93 M} & \good{0} & 3.63 M & 47.6\\
+      Z3 library only & \good{28} & 1.21 M & \good{0} & \good{3.52 M} & \good{43.6}\\
+      Symbolic exec.\ only & 27 & 1.40 M & \good{0} & 4.29 M & 50.9\\
+      Neither (raw model) & 27 & 1.52 M & \poor{7} & 4.44 M & 71.2\\
+      \arrayrulecolor{cascadered}\bottomrule
+    \end{tabular}}
+    \vskip0.8em
+    \resizebox{\linewidth}{!}{\tablestyle{2}\begin{tabular}{lcccc}
+      \rowcolor{cascadered}\hd{Tokens per defect} & \hd{Both} & \hd{Z3 only} & \hd{Symexec only} & \hd{Neither}\\
+      \texttt{cpasync\_barrier} & \good{0.42 M} & 0.62 M & 1.47 M & \poor{1.75 M}\\
+      \texttt{arrive\_before\_fence} & 1.24 M & \good{0.90 M} & 3.19 M & \poor{3.69 M}\\
+      \texttt{missing\_fence} & \good{1.77 M} & 2.05 M & 2.68 M & \poor{3.33 M}\\
+      \arrayrulecolor{cascadered}\bottomrule
+    \end{tabular}}
+    \par\vskip0.4em{\footnotesize\color{cascadegrey}DeepSeek V4 Pro (high), tools tested in isolation.}
+  
+  \end{block}
+\end{minipage}
+\end{column}
+\begin{column}{0.315\linewidth}
+\begin{minipage}[t][1184pt][t]{\linewidth}
+  \setlength{\cascadeh}{737pt}
+  \def\cascadevalign{top}
   \begin{block}{Case study: a pipelining bug}
     \textbf{\color{cascadedarkred}(a) The bug}
 \begin{lstlisting}
@@ -215,33 +270,10 @@ producer and consumer share a slot
 witness: [iter_p = 2, lag = 2]
 \end{lstlisting}
   \end{block}
-\end{minipage}
-\end{column}
-
-\begin{column}{0.315\linewidth}
-\begin{minipage}[t][0.935\textheight][t]{\linewidth}
-  \setlength{\cascadeh}{439pt}
-  \begin{block}{Whole-model speedups}
-    \vfill
-    \centering\small
-    \resizebox{\linewidth}{!}{\tablestyle{2}\begin{tabular}{llccccc}
-      \rowcolor{cascadered}\rule[-2.2ex]{0pt}{6.4ex}\hd{Workload} & \hd{Type} & \hd{\shortstack[c]{Astra\\+CODEX}} & \hd{\shortstack[c]{DeepSeek\\V4 Pro}} & \hd{\shortstack[c]{DeepSeek\\V4 Flash}} & \hd{\shortstack[c]{Meta Muse\\Spark 1.3}} & \hd{\shortstack[c]{GPT\\5.6 Sol}}\\
-      GPT-OSS & Model & \best{\good{1.13$\times$}} & \good{1.067$\times$} & \poor{0.891$\times$} & \poor{0.914$\times$} & \poor{0.921$\times$}\\
-      Qwen-3.5 MoE & Model & \poor{0.99$\times$} & \good{1.066$\times$} & \best{\good{1.075$\times$}} & \poor{0.997$\times$} & \poor{0.851$\times$}\\
-      Mamba-2 & Model & \best{\good{1.00$\times$}} & \poor{0.990$\times$} & \poor{0.958$\times$} & \poor{0.957$\times$} & \poor{0.958$\times$}\\
-      Cross-Entropy & Kernel & \good{1.02$\times$} & \good{1.550$\times$} & \poor{0.980$\times$} & \poor{0.820$\times$} & \best{\good{1.669$\times$}}\\
-      Llama-4 RoPE & Kernel & \best{\good{1.10$\times$}} & \good{1.073$\times$} & \good{1.069$\times$} & \good{1.011$\times$} & \good{1.047$\times$}\\
-      Neighborhood Att. & Kernel & \good{4.69$\times$} & \good{23.077$\times$} & \best{\good{24.851$\times$}} & \good{24.529$\times$} & \good{24.521$\times$}\\
-      \arrayrulecolor{cascadered}\bottomrule
-    \end{tabular}}
-    \par\vskip0.4em{\footnotesize\color{cascadegrey}Median best-round speedup (GB10, 6 rounds); shaded = best.}
-  
-    \vfill
-  \end{block}
   \vskip\cascadegap
-  \setlength{\cascadeh}{430pt}
+  \setlength{\cascadeh}{352pt}
+  \def\cascadevalign{center}
   \begin{block}{Verification finds more bugs}
-    \vfill
     \centering\small
     \resizebox{\linewidth}{!}{\tablestyle{3}\begin{tabular}{lcccccccc}
       \rowcolor{cascadered} & \multicolumn{4}{c}{\hd{Generic suite}} & \multicolumn{4}{c}{\hd{Sync suite}}\\
@@ -254,43 +286,6 @@ witness: [iter_p = 2, lag = 2]
       \arrayrulecolor{cascadered}\bottomrule
     \end{tabular}}
   
-    \vfill
-  \end{block}
-  \vskip\cascadegap
-  \setlength{\cascadeh}{621pt}
-  \begin{block}{Ablation: what do the tools buy?}
-    \vfill
-    \centering\small
-    \resizebox{\linewidth}{!}{\tablestyle{3}\begin{tabular}{lccccc}
-      \rowcolor{cascadered} & \multicolumn{2}{c}{\hd{Bug detection}} & \multicolumn{3}{c}{\hd{Bug-free code}}\\
-      \cmidrule(lr){2-3}\cmidrule(lr){4-6}
-      \rowcolor{cascadered}\hd{Test arm} & \hd{Found/30} & \hd{Tokens} & \hd{FP/21} & \hd{Tokens} & \hd{Tool calls}\\
-      Both tools & \good{28} & \good{0.93 M} & \good{0} & 3.63 M & 47.6\\
-      Z3 library only & \good{28} & 1.21 M & \good{0} & \good{3.52 M} & \good{43.6}\\
-      Symbolic exec.\ only & 27 & 1.40 M & \good{0} & 4.29 M & 50.9\\
-      Neither (raw model) & 27 & 1.52 M & \poor{7} & 4.44 M & 71.2\\
-      \arrayrulecolor{cascadered}\bottomrule
-    \end{tabular}}
-    \vskip0.8em
-    \resizebox{\linewidth}{!}{\tablestyle{2}\begin{tabular}{lcccc}
-      \rowcolor{cascadered}\hd{Tokens per defect} & \hd{Both} & \hd{Z3 only} & \hd{Symexec only} & \hd{Neither}\\
-      \texttt{cpasync\_barrier} & \good{0.42 M} & 0.62 M & 1.47 M & \poor{1.75 M}\\
-      \texttt{arrive\_before\_fence} & 1.24 M & \good{0.90 M} & 3.19 M & \poor{3.69 M}\\
-      \texttt{missing\_fence} & \good{1.77 M} & 2.05 M & 2.68 M & \poor{3.33 M}\\
-      \arrayrulecolor{cascadered}\bottomrule
-    \end{tabular}}
-    \par\vskip0.4em{\footnotesize\color{cascadegrey}DeepSeek V4 Pro (high), tools tested in isolation.}
-  
-    \vfill
-  \end{block}
-  \vskip\cascadegap
-  \setlength{\cascadeh}{446pt}
-  \begin{block}{Future directions}
-    \begin{itemize}
-      \item \textbf{Multi-GPU and heterogeneous targets.} Distributed kernels (ParallelKernelBench) and other accelerators, with proof obligations for collective ordering and distributed races.
-      \item \textbf{Constraint- and statistics-guided search.} Prune pipelining schedule families before codegen; use past feedback to cut costly LLM iterations.
-      \item \textbf{Verification across the compilation stack.} Further formal tools, such as a formal PTX model, to verify at several levels (Gluon, TTGIR, PTX).
-    \end{itemize}
   \end{block}
 \end{minipage}
 \end{column}
