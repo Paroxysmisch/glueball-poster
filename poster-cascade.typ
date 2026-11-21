@@ -60,7 +60,7 @@
   frame: (
     title-color: white, border-color: rgb("#F0C6B6"), body-color: white,
     thickness: 1.6pt, radius: 8pt,
-    inset: (x: 44pt, y: 15pt), body-inset: (x: 56pt, y: 17pt),
+    inset: (x: 44pt, y: 15pt), body-inset: (x: 56pt, y: 18.5pt),
   ),
   title-style: (boxed-style: none, sep-thickness: 0pt),
   title: text(font: sans, size: 34pt, weight: 700, fill: ink)[#chip(num)#h(16pt)#title],
@@ -87,20 +87,20 @@
 
 // ═════════════ HEADER ═════════════
 // One red banner holding the title row and the authors; the CASCADE logo spans both rows. The red starts 18mm above
-// the text area (outset into the top margin), so the bottom inset adds the same 18mm to keep the content centred.
+// the text area (outset into the top margin); the bottom inset is kept smaller so there is no empty band under the authors.
 #let authors = "Yash Shah, Mantas Baksys, Sean B. Holden, Timothy M. Jones"
-#block(width: 100%, fill: cascade-red, outset: (x: 24mm, top: 18mm), inset: (x: 40pt, top: 4mm, bottom: 18mm + 4mm), below: 0pt)[
-  #grid(columns: (auto, auto, 1fr, auto), column-gutter: 50pt, row-gutter: 20pt, align: horizon,
+#block(width: 100%, fill: cascade-red, outset: (x: 24mm, top: 18mm), inset: (x: 40pt, top: 0mm, bottom: 12mm), below: 0pt)[
+  #grid(columns: (auto, auto, 1fr, auto), column-gutter: 50pt, row-gutter: 40pt, align: horizon,
     text(font: display, size: 100pt, weight: 700, tracking: -1pt, fill: white)[Glueball],
     line(angle: 90deg, length: 100pt, stroke: 3pt + cascade-peach),
     text(font: serif, size: 42pt, weight: 700, fill: white)[Agentic Generation and Verification of \ Hardware-Optimized Gluon Kernels],
-    grid.cell(rowspan: 2, align: right + horizon, image("latex-src/logos/cascade-logo-reversed.pdf", height: 200pt)),
+    grid.cell(rowspan: 2, align: right + horizon, image("latex-src/logos/cascade-logo-reversed.pdf", height: 160pt)),
     grid.cell(colspan: 3, align: left + horizon,
       box(fill: cascade-peach, radius: 10pt, inset: (x: 26pt, y: 14pt),
         text(font: sans, size: 30pt, weight: 700, fill: ink, authors))),
   )
 ]
-#v(14pt)
+#v(19pt)
 
 // ═════════════ FULL-WIDTH FIGURES ═════════════
 #let fig-arch = {
@@ -200,16 +200,16 @@
 #card("1", "System: optimize, verify, benchmark", sky)[
   #same-scale(fig-arch)
 ]
-#v(14pt)
+#v(19pt)
 #card("2", "Correctness pipeline: LLM reasoning with Z3 evidence", mint)[
   #same-scale(fig-corr)
 ]
-#v(14pt)
+#v(19pt)
 #pair(
   x => card("3", "Whole-model speedups over Triton", sun)[#fig(fig-speed)#v(x)],
   x => card("4", "Verification finds more bugs", mint)[#fig(fig-bugs)#v(x)],
 )
-#v(14pt)
+#v(19pt)
 #let arm-names = ("Both tools", "Z3 library only", "Symbolic exec. only", "Neither (raw model)")
 #let arm-col = (ok, mint, amber, charcoal)
 #let abl-bar(val, mx, pal) = stack(dir: ltr, spacing: 8pt,
@@ -307,7 +307,7 @@ witness: [iter_p = 2, lag = 2]
     grid(columns: fr.map(f => f * 1fr), column-gutter: 26pt, ..case-cols(hm))
   })
 ]
-#v(14pt)
+#v(19pt)
 
 // ═════════════ TWO COLUMNS: the two halves of the correctness system ═════════════
 // Compact representations (no tables): op chips colour-coded by how they are modelled, and the axiom/theorem names.
@@ -346,7 +346,7 @@ witness: [iter_p = 2, lag = 2]
 ]
 
 #pair(card6, card7, gutter: 40pt)
-#v(14pt)
+#v(19pt)
 #card("9", "Future directions", lav)[
   #grid(columns: (1fr, 1fr, 1fr), column-gutter: 48pt,
     [*Multi-GPU and heterogeneous targets.* Extend generation and verification to distributed kernels (ParallelKernelBench) and other accelerators, with proof obligations for collective ordering and distributed races.],
