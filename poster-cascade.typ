@@ -221,7 +221,7 @@
   table.cell(colspan: 2, th(mint)[Bug detection]), table.cell(colspan: 3, th(mint)[Idiomatic, bug-free code]),
   th(mint)[Found /30↑], th(mint)[Tokens↓], th(mint)[False pos. /21↓], th(mint)[Tokens↓], th(mint)[Tool calls↓],
   table.hline(stroke: 2pt + mint.s),
-  text(size: 25pt)[Both tools], pos[28], pos[0.93 M], pos[0], pos[3.63 M], [47.6],
+  text(size: 25pt)[Both tools], pos[28], pos[0.93 M], pos[0], [3.63 M], [47.6],
   text(size: 25pt)[Z3 library only], pos[28], [1.21 M], pos[0], pos[3.52 M], pos[43.6],
   text(size: 25pt)[Symbolic exec. only], [27], [1.40 M], pos[0], [4.29 M], [50.9],
   text(size: 25pt)[Neither (raw model)], [27], [1.52 M], text(fill: cascade-red, weight: 700)[7], [4.44 M], [71.2])
