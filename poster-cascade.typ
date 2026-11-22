@@ -231,7 +231,7 @@
   th(mint, align: left)[Tokens per defect], ..arm-names.zip(arm-col).map(((n, p)) => th(p, align: left)[#n.split(" ").first()]),
   table.hline(stroke: 2pt + mint.s),
   ..defects.map(((d, v)) => (text(font: mono, size: 21pt)[#d], ..v.zip(arm-col).map(((x, p)) => abl-bar(x, 3.75, p)))).flatten())
-#card("5", "Z3 tools greatly reduce token usage and therefore verification cost", sky)[
+#card("5", "Z3 tools reduce token usage and therefore verification cost", sky)[
   #grid(columns: (1.2fr, 1fr), column-gutter: 40pt, align: horizon, fig(fig-abl), fig(fig-defects))
 
 ]
@@ -258,7 +258,7 @@ perform_add(
     b_smem[read_idx % num_buffers],
 )
 ```]],
-  block(height: bh)[#lab(rose)[(b) Symbolic model: the relevant part]
+  block(height: bh)[#lab(rose)[(b) Agent models behavior via our Gluon-to-Z3 library]
    #code(h: fx)[```python
 r0, w0 = ctx.map_async_copy_global_to_shared(
     0, src_addr=0x1000, dst_addr=0x100,
@@ -274,7 +274,7 @@ ctx.program_order(wait.id, load.id)
 
 safe, model = ctx.check_async_race_freedom()
 ```]],
-  block(height: bh)[#lab(rose)[(c) Z3 verdict: the race]
+  block(height: bh)[#lab(rose)[(c) Z3 detects a race]
    #code(h: fx)[```
 wait_group(2):
 DATA RACE detected:
@@ -286,7 +286,7 @@ DATA RACE detected:
     LOAD SHARED@0x100
     proxy=GENERIC
 ```]],
-  block(height: bh)[#lab(rose)[(d) Pipeline-level witness]
+  block(height: bh)[#lab(rose)[(d) Witness to reproduce the bug]
    #code(h: fx)[```
 check_pipeline_stage_isolation(
     num_stages=2, max_inflight=2)
