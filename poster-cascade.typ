@@ -34,7 +34,7 @@
 // ───────────── page & text ─────────────
 #let footer-h = 58mm
 #let qr-url = "https://openreview.net/pdf?id=4Lpg8unVZd"
-#set page(width: 841mm, height: 1189mm, fill: paper,
+#set page(paper: "a0", fill: paper,
   margin: (x: 24mm, top: 18mm, bottom: footer-h + 12mm),
   background: place(bottom, rect(width: 100%, height: footer-h, fill: cascade-red)),
   foreground: place(bottom + left, block(width: 100%, height: footer-h, inset: (x: 24mm + 40pt, y: 10mm),
