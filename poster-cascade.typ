@@ -21,7 +21,7 @@
 #let grey = (f: rgb("#F1F2F4"), s: rgb("#9AA0AB"), d: rgb("#5B6270"))  // CASCADE greys (inputs only)
 #let ok = (f: rgb("#E2F3E8"), s: rgb("#3FA76B"), d: rgb("#1E7A47"))    // success: verify, correct, improvements
 #let amber = (f: rgb("#FDEFD6"), s: rgb("#E8A33D"), d: rgb("#9A6410"))
-#let charcoal = (f: rgb("#E7E9EC"), s: rgb("#3C4250"), d: rgb("#2A2F38"))
+#let purple = (f: rgb("#EEE7F7"), s: rgb("#7E57C2"), d: rgb("#56389A"))
 #let stripe = rgb("#FFF5F1")       // alternating table rows
 #let stripe-warm = rgb("#FFF8F0")
 
@@ -211,7 +211,7 @@
 )
 #v(17pt)
 #let arm-names = ("Both tools", "Z3 library only", "Symbolic exec. only", "Neither (raw model)")
-#let arm-col = (ok, mint, amber, charcoal)
+#let arm-col = (ok, purple, amber, mint)   // both tools, Z3 only, symbolic only, neither
 #let abl-bar(val, mx, pal) = stack(dir: ltr, spacing: 8pt,
   box(width: val * 10pt, height: 22pt, radius: 3pt, fill: pal.s),
   text(size: 24pt, weight: 700, fill: pal.d)[#val M])
