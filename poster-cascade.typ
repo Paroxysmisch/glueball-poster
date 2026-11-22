@@ -110,10 +110,10 @@
     node-inset: 12pt, spacing: (62pt, 46pt), edge-stroke: 2.8pt + ink.lighten(30%), mark-scale: 85%,
     nd(lav, (0, 0), <tr>, [*AST translation* \ #sub[Triton kernels → Gluon]], w: 340pt, h: H),
     nd(sun, (1, 0), <m>, [*Gluon model*], w: 250pt, h: H),
-    nd(sky, (2, 0), <pf>, [*Profile* \ #sub[ncu · Proton · probes]], w: 370pt, h: H),
-    nd(sky, (3, 0), <pr>, [*Propose* \ #sub[ranked portfolio]], w: 270pt, h: H),
-    nd(sky, (4, 0), <im>, [*Implement* \ #sub[targeted edits]], w: 270pt, h: H),
-    nd(ok, (5, 0), <vf>, [*Verify* \ #sub[tests + Z3 tools]], w: 270pt, h: H),
+    nd(sky, (2, 0), <pf>, [*Profile* \ #sub[NCU · Proton · probes]], w: 370pt, h: H),
+    nd(sky, (3, 0), <pr>, [*Propose*], w: 270pt, h: H),
+    nd(sky, (4, 0), <im>, [*Implement*], w: 270pt, h: H),
+    nd(ok, (5, 0), <vf>, [*Verify* \ #sub[Z3 tools]], w: 270pt, h: H),
     nd(grey, (6, 0), <bm>, [*Benchmark* \ #sub[full model]], w: 250pt, h: H),
     edge(<tr>, <m>, "->"), edge(<m>, <pf>, "->"),
     edge(<pf>, <pr>, "->"), edge(<pr>, <im>, "->"), edge(<im>, <vf>, "->"), edge(<vf>, <bm>, "->"),
@@ -144,7 +144,7 @@
     edge(<vd>, <rp>, "->", stroke: 2.8pt + ok.s, label: tag(ok, [correct]), label-side: left, label-sep: 12pt),
     edge(<vd>, <ce>, "->", stroke: 2.8pt + rose.s, label: tag(rose, [incorrect]), label-side: left, label-sep: 14pt),
     edge(<ce>, (1, 3), <sa>, "-->", stroke: 2.8pt + rose.s),
-    node((2, 3), tag(rose, [does not reproduce → retry]), stroke: none, fill: white, inset: 8pt),
+    node((2, 3), tag(rose, [does not reproduce bug → retry]), stroke: none, fill: white, inset: 8pt),
   )
 }
 
@@ -197,11 +197,11 @@
   let k = calc.min(1.0, size.width / measure(fig-arch).width, size.width / measure(body).width)
   align(center, scale(k * 100%, reflow: true, body))
 })
-#card("1", "System: optimize, verify, benchmark", sky)[
+#card("1", "System: profile, optimize, verify, benchmark", sky)[
   #same-scale(fig-arch)
 ]
 #v(17pt)
-#card("2", "Correctness pipeline: LLM reasoning with Z3 evidence", mint)[
+#card("2", "Correctness pipeline: LLM reasoning with Z3 tools", mint)[
   #same-scale(fig-corr)
 ]
 #v(17pt)
@@ -231,7 +231,7 @@
   th(mint, align: left)[Tokens per defect], ..arm-names.zip(arm-col).map(((n, p)) => th(p, align: left)[#n.split(" ").first()]),
   table.hline(stroke: 2pt + mint.s),
   ..defects.map(((d, v)) => (text(font: mono, size: 21pt)[#d], ..v.zip(arm-col).map(((x, p)) => abl-bar(x, 3.75, p)))).flatten())
-#card("5", "Ablation: what do the specialized tools buy?", sky)[
+#card("5", "Z3 tools greatly reduce token usage and therefore verification cost", sky)[
   #grid(columns: (1.2fr, 1fr), column-gutter: 40pt, align: horizon, fig(fig-abl), fig(fig-defects))
 
 ]
@@ -326,21 +326,21 @@ witness: [iter_p = 2, lag = 2]
 
 #let card6(x) = [
   #card("7", "Symbolic execution: a Z3 model of TTIR", mint)[
-    Each MLIR op becomes a Z3 term; ops the model cannot capture become *fresh opaque symbols* that split the kernel into *symbolic regions*. Softmax:
+    Each MLIR op becomes a Z3 term; ops the model cannot capture become *opaque symbols* that split the kernel into *symbolic regions*. Softmax ops break down:
     #v(4pt)
     #chip-row("TTIR ops", (op-chip(rose, "tt.load"), op-chip(rose, "tt.reduce max"), op-chip(ok, "arith.subf"),
       op-chip(amber, "math.exp"), op-chip(rose, "tt.reduce sum"), op-chip(ok, "arith.divf")))
     #v(4pt)
     #chip-row("Z3 term", (chip-box(text(font: mono, size: 23pt)[out = exp(load_row − max_row) / denominator]),))
     #v(8pt)
-    #legend(rose, [fresh opaque symbol]) #h(24pt) #legend(ok, [native Z3 FP op]) #h(24pt) #legend(amber, [uninterpreted fn])
+    #legend(rose, [opaque symbol]) #h(24pt) #legend(amber, [uninterpreted function]) #h(24pt) #legend(ok, [native Z3 FP op]) 
     #v(x)
   ]
 ]
 
 #let card7(x) = [
   #card("8", "The Gluon-to-Z3 library", mint)[
-    Hardware actions become *events* ordered by _happens-before_. Each *theorem* asks Z3 to satisfy the *negation* of a property: *UNSAT* proves it, *SAT* gives a counterexample.
+    Hardware operations become *events* ordered by _happens-before_. Each *theorem* asks Z3 to satisfy the *negation* of a property, such that *SAT* gives a counterexample.
     #v(4pt)
     #chip-row("Axioms", ("Sequential consistency", "CTA barrier", "Async-proxy fence", "Mbarrier sync", "Manual ordering").map(t => name-chip(mint, t)))
     #v(4pt)
