@@ -331,7 +331,7 @@ witness: [iter_p = 2, lag = 2]
     #chip-row("TTIR ops", (op-chip(rose, "tt.load"), op-chip(rose, "tt.reduce max"), op-chip(ok, "arith.subf"),
       op-chip(amber, "math.exp"), op-chip(rose, "tt.reduce sum"), op-chip(ok, "arith.divf")))
     #v(4pt)
-    #chip-row("Z3 term", (chip-box(text(font: mono, size: 23pt)[out = exp(load_row − max_row) / denominator]),))
+    #chip-row("Z3 term", (chip-box(text(font: mono, size: 21pt)[out = exp(load_row − max_row) / Σ exp(load_row − max_row)]),))
     #v(8pt)
     #legend(rose, [opaque symbol]) #h(24pt) #legend(amber, [uninterpreted function]) #h(24pt) #legend(ok, [native Z3 FP op]) 
     #v(x)
