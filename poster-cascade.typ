@@ -37,13 +37,15 @@
 #set page(paper: "a0", fill: paper,
   margin: (x: 24mm, top: 18mm, bottom: footer-h + 12mm),
   background: place(bottom, rect(width: 100%, height: footer-h, fill: cascade-red)),
-  foreground: place(bottom + left, block(width: 100%, height: footer-h, inset: (x: 24mm + 40pt, y: 10mm),
+  foreground: place(bottom + left, block(width: 100%, height: footer-h, inset: (x: 24mm + 40pt, y: 6mm),
     grid(columns: (auto, 1fr, auto), column-gutter: 60pt, align: horizon,
       image("latex-src/logos/ucam-logo-white.png", height: 26mm),
       stack(spacing: 14pt,
         text(font: "Nimbus Sans", size: 30pt, weight: 700, fill: white)[Computer Architecture and Semiconductor Design Centre],
         text(font: "Nimbus Sans", size: 24pt, fill: cascade-peach)[Department of Computer Science and Technology, University of Cambridge]),
-      box(fill: white, radius: 8pt, inset: 6pt, qrcode(qr-url, width: 38mm, quiet-zone: 2, background-fill: white)),
+      // equal white margin on every side comes from the box inset (no separate QR quiet zone); the footer's vertical
+      // inset must leave room for the full box (34mm + 2 x 4mm), or the box gets squashed vertically
+      box(fill: white, radius: 8pt, inset: 4mm, qrcode(qr-url, width: 34mm)),
     ))))
 #set text(font: body-font, size: 25.5pt, fill: ink, lang: "en", hyphenate: false, weight: 400)
 #set par(justify: false, leading: 0.72em, spacing: 1.1em)
