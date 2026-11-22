@@ -100,7 +100,7 @@
         text(font: sans, size: 30pt, weight: 700, fill: ink, authors))),
   )
 ]
-#v(19pt)
+#v(17pt)
 
 // ═════════════ FULL-WIDTH FIGURES ═════════════
 #let fig-arch = {
@@ -200,16 +200,16 @@
 #card("1", "System: optimize, verify, benchmark", sky)[
   #same-scale(fig-arch)
 ]
-#v(19pt)
+#v(17pt)
 #card("2", "Correctness pipeline: LLM reasoning with Z3 evidence", mint)[
   #same-scale(fig-corr)
 ]
-#v(19pt)
+#v(17pt)
 #pair(
   x => card("3", "Whole-model speedups over Triton", sun)[#fig(fig-speed)#v(x)],
   x => card("4", "Verification finds more bugs", mint)[#fig(fig-bugs)#v(x)],
 )
-#v(19pt)
+#v(17pt)
 #let arm-names = ("Both tools", "Z3 library only", "Symbolic exec. only", "Neither (raw model)")
 #let arm-col = (ok, mint, amber, charcoal)
 #let abl-bar(val, mx, pal) = stack(dir: ltr, spacing: 8pt,
@@ -307,17 +307,21 @@ witness: [iter_p = 2, lag = 2]
     grid(columns: fr.map(f => f * 1fr), column-gutter: 26pt, ..case-cols(hm))
   })
 ]
-#v(19pt)
+#v(17pt)
 
 // ═════════════ TWO COLUMNS: the two halves of the correctness system ═════════════
 // Compact representations (no tables): op chips colour-coded by how they are modelled, and the axiom/theorem names.
-#let op-chip(pal, t) = box(fill: pal.f, stroke: 1.8pt + pal.s, radius: 6pt, inset: (x: 8pt, y: 7pt), baseline: 30%,
-  text(font: mono, size: 17.5pt, fill: pal.d, t))
-#let name-chip(pal, t) = box(fill: pal.f, stroke: 1.8pt + pal.s, radius: 6pt, inset: (x: 14pt, y: 7pt), baseline: 30%,
-  text(font: sans, size: 22pt, weight: 700, fill: pal.d, t))
-#let chip-row(label, chips) = grid(columns: (124pt, 1fr), column-gutter: 8pt, align: (left + top, left),
-  text(font: sans, size: 21pt, weight: 700, fill: muted, upper(label)),
-  par(leading: 1.05em, chips.join(h(8pt))))
+// Label and chips share one fixed height and the same baseline shift, and the label sits in the same line as its
+// chips (later lines hang under the first chip), so labels line up with the chips exactly.
+#let CHIP-H = 34pt
+#let LABEL-W = 124pt
+#let chip-box(body, pal: none, inset-x: 0pt) = box(height: CHIP-H, baseline: 28%, radius: 6pt, inset: (x: inset-x),
+  fill: if pal == none { none } else { pal.f }, stroke: if pal == none { none } else { 1.8pt + pal.s },
+  align(horizon, body))
+#let op-chip(pal, t) = chip-box(pal: pal, inset-x: 8pt, text(font: mono, size: 17.5pt, fill: pal.d, t))
+#let name-chip(pal, t) = chip-box(pal: pal, inset-x: 14pt, text(font: sans, size: 22pt, weight: 700, fill: pal.d, t))
+#let chip-row(label, chips) = par(leading: 8pt, hanging-indent: LABEL-W + 8pt,
+  [#chip-box(box(width: LABEL-W, text(font: sans, size: 21pt, weight: 700, fill: muted, upper(label))))#h(8pt)#chips.join(h(8pt))])
 #let legend(pal, t) = box[#box(width: 18pt, height: 18pt, radius: 4pt, fill: pal.f, stroke: 1.8pt + pal.s, baseline: 15%) #h(6pt)#text(size: 21pt, fill: muted, t)]
 
 #let card6(x) = [
@@ -327,7 +331,7 @@ witness: [iter_p = 2, lag = 2]
     #chip-row("TTIR ops", (op-chip(rose, "tt.load"), op-chip(rose, "tt.reduce max"), op-chip(ok, "arith.subf"),
       op-chip(amber, "math.exp"), op-chip(rose, "tt.reduce sum"), op-chip(ok, "arith.divf")))
     #v(4pt)
-    #chip-row("Z3 term", (text(font: mono, size: 23pt)[out = exp(load_row − max_row) / denominator],))
+    #chip-row("Z3 term", (chip-box(text(font: mono, size: 23pt)[out = exp(load_row − max_row) / denominator]),))
     #v(8pt)
     #legend(rose, [fresh opaque symbol]) #h(24pt) #legend(ok, [native Z3 FP op]) #h(24pt) #legend(amber, [uninterpreted fn])
     #v(x)
@@ -346,7 +350,7 @@ witness: [iter_p = 2, lag = 2]
 ]
 
 #pair(card6, card7, gutter: 40pt)
-#v(19pt)
+#v(17pt)
 #card("9", "Future directions", lav)[
   #grid(columns: (1fr, 1fr, 1fr), column-gutter: 48pt,
     [*Multi-GPU and heterogeneous targets.* Extend generation and verification to distributed kernels (ParallelKernelBench) and other accelerators, with proof obligations for collective ordering and distributed races.],
